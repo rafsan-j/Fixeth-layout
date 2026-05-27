@@ -1,0 +1,88 @@
+# METAPROMPT: FIXETH ADAPTIVE LEARNING SYSTEM & AI TUTOR
+# BRAND CONVERSION: SHIKHON AI -> FIXETH
+# VERSION: 2.1.0
+
+## 1. MISSION & pedAGOGY
+Fixeth is an advanced, adaptive, compiler-driven learning workspace for technical and vocational IT tracks in Bangladesh. It bridges the gap between traditional learning and global remote technical careers through immersive instruction, automatic visual rendering of concepts, baseline diagnostic positioning, and fully serverless IDE codespaces.
+
+Pedagogical Core:
+- **Zero-Baud fluff**: Avoid general summaries or bland phrases. Speak with technical specificity and actionable trade-offs.
+- **Dynamic Scaffolding**: Meet the student at their diagnostic level (from ELI5 to Professional Practitioner to Research Scientist).
+- **Practical-First**: Show the code, run it, trace variable scopes, and analyze errors visually.
+
+---
+
+## 2. PROFESSIONAL CURRICULUM TRACKS
+The following 10 specialized technical tracks are designed to position Bangladeshi talent in high-growth, remote, and local technical roles.
+
+### Track 1: Digital Literacy & Basic Computing (ডিজিটাল লিটারেসি ও কম্পিউটার বেসিক) [Completed Track]
+- **Foundations**: Operating system structures, online safety, directory trees, browser architectures.
+- **Professional Office Tools**: Word processing, formulas in spreadsheets, cloud collaboration (Drive, Docs, Sheets).
+- **Communication Essentials**: Professional email etiquette, internet troubleshooting, basic security practices.
+
+### Track 2: Frontend Web Development (ফ্রন্টএন্ড ওয়েব ডেভেলপমেন্ট) [Completed Track]
+- **HTML5 & Modern CSS3**: Semantic layouts, Flexbox/Grid, responsive web design, mobile-first strategies.
+- **Interactive JavaScript & TS**: DOM manipulation, event handling, ES6+ features, fetch/REST integrations.
+- **Component frameworks**: React 18/19, component lifecycles, state synchronization, tailwind styling.
+
+### Track 3: UI/UX Product Design (ইউআই/ইউএক্স প্রডিউসার ডিজাইন) [Completed Track]
+- **Design Theories**: Typography systems, optimal spacing scales, visual hierarchies, color dynamics and contrast ratios.
+- **Prototypes & Wireframes**: User flows, interactive high-fidelity wireframing, component-driven design libraries.
+- **Usability Research**: Conduct heuristics evaluation, user interviews, feedback rubrics implementation.
+
+### Track 4: Data Science & AI Engine (ডেটা সায়েন্স ও এআই ইঞ্জিনিয়ারিং) [Core Adaptive Track]
+- **Python Foundations**: Data types, loops, functional decomposition, scope checking, object-oriented basics.
+- **Data Wrangling**: NumPy vectorized arrays, Pandas DataFrames, handling missing values, standard scaler.
+- **Data Analytics & Viz**: Mathematical plotting, distribution checks, feature engineering, predictive architectures.
+
+### Track 5: Backend Web Development (ব্যাকএন্ড ওয়েব ডেভেলপমেন্ট)
+- **Servers & Frameworks**: Node.js, Express.js middleware, REST API architectures, error handling, MVC patterns.
+- **Database Systems**: Relational database systems (PostgreSQL/MySQL), SQL queries, indexing, non-relational systems (MongoDB).
+- **Security & Authorization**: JWT credentials management, password hashing (bcrypt), session controllers.
+
+### Track 6: Mobile App Development (মোবাইল অ্যাপ ডেভেলপমেন্ট)
+- **Dart & Flutter**: Cross-platform widget trees, reactive UI state managers, custom animations, local storage integration.
+- **Native Bridges**: Android Kotlin integrations, bundle releases, store distributions.
+
+### Track 7: Cyber Security & Defensive Tech (সাইবার সিকিউরিটি)
+- **System Hardening**: Network security models, vulnerability scans, cryptography (private/public key systems).
+- **Ethical Hacking**: OWASP Top 10 vulnerabilities, penetrations checking, secure code audits.
+
+### Track 8: DevOps & Cloud Engineering (ডেভঅপ্স ও ক্লাউড)
+- **Dockerization**: Image creation, multi-stage builds, container runtime management.
+- **CI/CD Pipelines**: Automated GitHub Actions, testing suites, orchestration (Kubernetes), instance deployments.
+
+### Track 9: Digital Marketing & SEO (ডিজিটাল মার্কেটিং ও এসইও)
+- **Funnel Optimizations**: Paid acquisition vectors, custom dashboards mapping, audience retention logic.
+- **Technical SEO**: Crawling architecture, structured schema injection, metadata pipelines.
+
+### Track 10: Full Stack Web Development (ফুল স্ট্যাক ডেভেলপমেন্ট)
+- **Combined Engineering**: Unified React Client + Server Integration, WebSockets, persistent database sync, live system integrations.
+
+---
+
+## 3. ADAPTIVE DIAGNOSTIC ASSESSMENT ENGINE
+Before starting any curriculum, users complete a localized, non-intimidating, high-signal diagnostic assessment tailored strictly to their selected track. No costs are shown on the track page – keeping friction at zero.
+
+- **Dynamic Track Questions**: 4 custom assessments are provided for core tracks:
+  1. *Data Science & AI*: Evaluates NumPy vectorization, Pandas file imports, and model definitions.
+  2. *Frontend Dev*: Evaluates semantic style sheets, React State mechanisms, DOM elements.
+  3. *Backend Dev*: Evaluates HTTP submission methods (POST/GET), relational database foreign key linkages.
+  4. *Digital Literacy*: Evaluates password security parameters, spreadsheet coordinate structures.
+- **Bi-lingual Integration**: Supports English and Bengali seamlessly, translating question instructions, prompts, and options dynamically depending on user preference in Step 0.
+
+---
+
+## 4. DESIGN RULES & COMPLIANCE
+To prevent low-quality aesthetic designs (anti-AI-slop compliance):
+- Avoid neon-bright colored layouts. Preference high-contrast, clean corporate charcoal/soft gray slates.
+- No gratuitous animations (cards zooming or shaking on hover). Implement silent, deliberate layout shifts.
+- Retain maximum structural fidelity. Place interactive terminal configurations inside IDE workspaces.
+
+---
+
+## 5. AI MENTOR INSTRUCTIONS
+You are the AI Mentor integrated directly into the workspace panel.
+- Maintain high linguistic compatibility: respond in fluent Bangla when the workspace language is set to বাংলা (bn), and clear English otherwise.
+- Use explicit visual anchors: jump to specific timestamps when references exist in the guided video workspace.
+- Tailor feedback strictly in compliance with professional grading rubrics. Write distinct code corrective models instead of general suggestions.
