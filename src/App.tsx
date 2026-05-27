@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from "react";
+import type { ComponentType } from "react";
 import { themes, i18n } from "./data";
 import { Module, ChatMessage } from "./types";
+import {
+  Award,
+  Bot,
+  Clapperboard,
+  Code2,
+  House,
+  NotebookPen,
+  ClipboardList,
+  Upload,
+  UsersRound,
+  Wrench
+} from "lucide-react";
 
 // Import Modularized Panels & Workspaces
 import Onboarding from "./components/Onboarding";
@@ -16,6 +29,128 @@ import CommunityScreen from "./components/Community";
 import CertificatesScreen from "./components/Certificates";
 import ProfileSettingsScreen from "./components/ProfileSettings";
 import { CourseExplorerSidebar, AIChatSidebar } from "./components/Sidebar";
+
+type UserProfile = {
+  name: string;
+  email: string;
+  title?: string;
+  location?: string;
+  bio?: string;
+};
+
+type UserPreferences = {
+  layoutDensity: "compact" | "comfortable" | "spacious";
+  colorPreset: "mint" | "ocean" | "sunset" | "rose";
+  accentColor: string;
+  mentorTone: "concise" | "balanced" | "deep";
+  weeklyGoal: number;
+  contentVisibility: {
+    showCommunity: boolean;
+    showCertificates: boolean;
+    showMentor: boolean;
+    showPortfolio: boolean;
+  };
+  dataPreferences: {
+    allowTelemetry: boolean;
+    allowPersonalization: boolean;
+    autoSaveProgress: boolean;
+    downloadFormat: "json" | "csv";
+  };
+};
+
+const DEFAULT_USER: UserProfile = {
+  name: "Jawat",
+  email: "jawat@example.com",
+  title: "Learner",
+  location: "Dhaka, Bangladesh",
+  bio: "Focused on practical, job-ready engineering skills."
+};
+
+const DEFAULT_PREFERENCES: UserPreferences = {
+  layoutDensity: "comfortable",
+  colorPreset: "mint",
+  accentColor: "#00C896",
+  mentorTone: "balanced",
+  weeklyGoal: 4,
+  contentVisibility: {
+    showCommunity: true,
+    showCertificates: true,
+    showMentor: true,
+    showPortfolio: true
+  },
+  dataPreferences: {
+    allowTelemetry: true,
+    allowPersonalization: true,
+    autoSaveProgress: true,
+    downloadFormat: "json"
+  }
+};
+
+const ACCENT_PRESETS: Record<UserPreferences["colorPreset"], string> = {
+  mint: "#00C896",
+  ocean: "#3AA0FF",
+  sunset: "#FF8A3D",
+  rose: "#FF5B8A"
+};
+
+const normalizePreferences = (raw: unknown): UserPreferences => {
+  const src = (raw && typeof raw === "object") ? (raw as Partial<UserPreferences>) : {};
+  const srcVisibility = (src.contentVisibility && typeof src.contentVisibility === "object")
+    ? src.contentVisibility
+    : DEFAULT_PREFERENCES.contentVisibility;
+  const srcDataPrefs = (src.dataPreferences && typeof src.dataPreferences === "object")
+    ? src.dataPreferences
+    : DEFAULT_PREFERENCES.dataPreferences;
+
+  const layoutDensity = ["compact", "comfortable", "spacious"].includes(String(src.layoutDensity))
+    ? (src.layoutDensity as UserPreferences["layoutDensity"])
+    : DEFAULT_PREFERENCES.layoutDensity;
+  const colorPreset = ["mint", "ocean", "sunset", "rose"].includes(String(src.colorPreset))
+    ? (src.colorPreset as UserPreferences["colorPreset"])
+    : DEFAULT_PREFERENCES.colorPreset;
+  const mentorTone = ["concise", "balanced", "deep"].includes(String(src.mentorTone))
+    ? (src.mentorTone as UserPreferences["mentorTone"])
+    : DEFAULT_PREFERENCES.mentorTone;
+  const weeklyGoal = Number.isFinite(src.weeklyGoal) ? Math.min(10, Math.max(1, Number(src.weeklyGoal))) : DEFAULT_PREFERENCES.weeklyGoal;
+  const accentColor = typeof src.accentColor === "string" && /^#[0-9a-fA-F]{6}$/.test(src.accentColor)
+    ? src.accentColor
+    : ACCENT_PRESETS[colorPreset];
+
+  return {
+    layoutDensity,
+    colorPreset,
+    accentColor,
+    mentorTone,
+    weeklyGoal,
+    contentVisibility: {
+      showCommunity: srcVisibility.showCommunity ?? DEFAULT_PREFERENCES.contentVisibility.showCommunity,
+      showCertificates: srcVisibility.showCertificates ?? DEFAULT_PREFERENCES.contentVisibility.showCertificates,
+      showMentor: srcVisibility.showMentor ?? DEFAULT_PREFERENCES.contentVisibility.showMentor,
+      showPortfolio: srcVisibility.showPortfolio ?? DEFAULT_PREFERENCES.contentVisibility.showPortfolio
+    },
+    dataPreferences: {
+      allowTelemetry: srcDataPrefs.allowTelemetry ?? DEFAULT_PREFERENCES.dataPreferences.allowTelemetry,
+      allowPersonalization: srcDataPrefs.allowPersonalization ?? DEFAULT_PREFERENCES.dataPreferences.allowPersonalization,
+      autoSaveProgress: srcDataPrefs.autoSaveProgress ?? DEFAULT_PREFERENCES.dataPreferences.autoSaveProgress,
+      downloadFormat: srcDataPrefs.downloadFormat === "csv" ? "csv" : "json"
+    }
+  };
+};
+
+const toRgba = (hex: string, alpha: number) => {
+  const normalized = hex.replace("#", "");
+  const safe = normalized.length === 6 ? normalized : "00C896";
+  const r = parseInt(safe.slice(0, 2), 16);
+  const g = parseInt(safe.slice(2, 4), 16);
+  const b = parseInt(safe.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+type NavigationItem = {
+  id: string;
+  label: string;
+  icon: ComponentType<{ size?: number; strokeWidth?: number; color?: string; className?: string }>;
+};
 
 const CORE_MODULES: Module[] = [
   {
@@ -58,7 +193,8 @@ export default function App() {
   const [rightSidebarWidth, setRightSidebarWidth] = useState(290);
   const [isResizing, setIsResizing] = useState(false);
   // Global user/profile state
-  const [user, setUser] = useState({ name: "Jawat", email: "jawat@example.com", title: "Learner", location: "Dhaka, Bangladesh", bio: "Focused on practical, job-ready engineering skills." });
+  const [user, setUser] = useState<UserProfile>(DEFAULT_USER);
+  const [preferences, setPreferences] = useState<UserPreferences>(DEFAULT_PREFERENCES);
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileTab, setProfileTab] = useState<"profile" | "account" | "preferences">("profile");
   const [profileReturnNav, setProfileReturnNav] = useState("dashboard");
@@ -66,8 +202,54 @@ export default function App() {
   const activeModule = modules.find((mod) => mod.lessons.some((lesson) => lesson.id === activeLessonId)) ?? modules[0];
   const activeLesson = activeModule?.lessons.find((lesson) => lesson.id === activeLessonId) ?? activeModule?.lessons[0];
 
-  const T = themes[isDark ? "dark" : "light"];
+  const accent = preferences.accentColor || ACCENT_PRESETS[preferences.colorPreset];
+  const baseTheme = themes[isDark ? "dark" : "light"];
+  const T = {
+    ...baseTheme,
+    accent,
+    accentHi: accent,
+    accentDim: toRgba(accent, 0.16)
+  };
   const t = i18n[lang] || i18n.en;
+
+  const densityConfig = {
+    compact: { topBarHeight: 40, bottomBarHeight: 46, navPadding: "3px 6px" },
+    comfortable: { topBarHeight: 44, bottomBarHeight: 52, navPadding: "4px 6px" },
+    spacious: { topBarHeight: 52, bottomBarHeight: 58, navPadding: "6px 8px" }
+  };
+  const density = densityConfig[preferences.layoutDensity];
+
+  // Load persisted user customization
+  useEffect(() => {
+    try {
+      const rawUser = localStorage.getItem("fixeth.userProfile");
+      const rawPrefs = localStorage.getItem("fixeth.userPreferences");
+      const rawLang = localStorage.getItem("fixeth.lang");
+      const rawTheme = localStorage.getItem("fixeth.isDark");
+      if (rawUser) setUser({ ...DEFAULT_USER, ...JSON.parse(rawUser) });
+      if (rawPrefs) setPreferences(normalizePreferences(JSON.parse(rawPrefs)));
+      if (rawLang === "en" || rawLang === "bn") setLang(rawLang);
+      if (rawTheme === "true" || rawTheme === "false") setIsDark(rawTheme === "true");
+    } catch {
+      // Ignore bad local storage payloads and keep defaults.
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("fixeth.userProfile", JSON.stringify(user));
+  }, [user]);
+
+  useEffect(() => {
+    localStorage.setItem("fixeth.userPreferences", JSON.stringify(normalizePreferences(preferences)));
+  }, [preferences]);
+
+  useEffect(() => {
+    localStorage.setItem("fixeth.lang", lang);
+  }, [lang]);
+
+  useEffect(() => {
+    localStorage.setItem("fixeth.isDark", String(isDark));
+  }, [isDark]);
 
   // Sync active lesson highlight in list elements
   useEffect(() => {
@@ -141,39 +323,26 @@ export default function App() {
     }
   };
 
-  if (screen === "onboarding") {
-    return (
-      <Onboarding
-        T={T}
-        parentT={t}
-        isDark={isDark}
-        onComplete={(data) => {
-          if (data.lang) setLang(data.lang);
-          if (typeof data.assessmentScore === "number") {
-            const recommendedLessonId = data.assessmentScore >= 2 ? 5 : data.assessmentScore === 1 ? 3 : 1;
-            setActiveLessonId(recommendedLessonId);
-            setOpenMods({ 1: true, 2: recommendedLessonId >= 5 });
-          }
-          setScreen("app");
-          setActiveNav("dashboard");
-        }}
-      />
-    );
-  }
-
   // Define Navigation Array
-  const NAVIGATION_ITEMS = [
-    { id: "dashboard", label: t.dashboard, icon: "🏠" },
-    { id: "video", label: t.guidedVideo, icon: "🎬" },
-    { id: "notebook", label: t.notebook, icon: "📓" },
-    { id: "quiz", label: t.quizAssign, icon: "📝" },
-    { id: "submissions", label: t.submissions, icon: "📤" },
-    { id: "codespace", label: t.codeSpace, icon: "⚡" },
-    { id: "tools", label: t.tools, icon: "🔧" },
-    { id: "mentor", label: t.aiMentor, icon: "✦" },
-    { id: "community", label: t.community, icon: "👥" },
-    { id: "certs", label: t.certs, icon: "🎓" }
+  const NAVIGATION_ITEMS: NavigationItem[] = [
+    { id: "dashboard", label: t.dashboard, icon: House },
+    { id: "video", label: t.guidedVideo, icon: Clapperboard },
+    { id: "notebook", label: t.notebook, icon: NotebookPen },
+    { id: "quiz", label: t.quizAssign, icon: ClipboardList },
+    { id: "submissions", label: t.submissions, icon: Upload },
+    { id: "codespace", label: t.codeSpace, icon: Code2 },
+    { id: "tools", label: t.tools, icon: Wrench },
+    ...(preferences.contentVisibility.showMentor ? [{ id: "mentor", label: t.aiMentor, icon: Bot }] : []),
+    ...(preferences.contentVisibility.showCommunity ? [{ id: "community", label: t.community, icon: UsersRound }] : []),
+    ...(preferences.contentVisibility.showCertificates ? [{ id: "certs", label: t.certs, icon: Award }] : [])
   ];
+
+  useEffect(() => {
+    const allowedIds = new Set(NAVIGATION_ITEMS.map((item) => item.id));
+    if (!allowedIds.has(activeNav) && activeNav !== "profile") {
+      setActiveNav("dashboard");
+    }
+  }, [activeNav, NAVIGATION_ITEMS]);
 
   // Screen selection dispatcher
   const renderScreen = () => {
@@ -266,9 +435,32 @@ export default function App() {
             lang={lang}
             isDark={isDark}
             user={user}
+            preferences={preferences}
             initialTab={profileTab}
             onBack={() => setActiveNav(profileReturnNav || "dashboard")}
             onSaveUser={setUser}
+            onSavePreferences={(nextPrefs) => setPreferences(normalizePreferences(nextPrefs))}
+            onResetPreferences={() => setPreferences(DEFAULT_PREFERENCES)}
+            onExportProfileData={() => {
+              const payload = {
+                user,
+                preferences,
+                exportedAt: new Date().toISOString()
+              };
+              const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `fixeth-profile-${new Date().toISOString().slice(0, 10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            onClearProfileData={() => {
+              localStorage.removeItem("fixeth.userProfile");
+              localStorage.removeItem("fixeth.userPreferences");
+              setUser(DEFAULT_USER);
+              setPreferences(DEFAULT_PREFERENCES);
+            }}
             onSetLang={setLang}
             onToggleTheme={() => setIsDark((prev) => !prev)}
           />
@@ -279,7 +471,28 @@ export default function App() {
   };
 
   const isWorkspaceTab = ["video", "notebook", "quiz", "submissions"].includes(activeNav);
-  const showAiSidebar = ["video", "notebook", "quiz"].includes(activeNav);
+  const showAiSidebar = preferences.contentVisibility.showMentor && ["video", "notebook", "quiz"].includes(activeNav);
+
+  // Keep this conditional return after all hooks to preserve hook order across renders.
+  if (screen === "onboarding") {
+    return (
+      <Onboarding
+        T={T}
+        parentT={t}
+        isDark={isDark}
+        onComplete={(data) => {
+          if (data.lang) setLang(data.lang);
+          if (typeof data.assessmentScore === "number") {
+            const recommendedLessonId = data.assessmentScore >= 2 ? 5 : data.assessmentScore === 1 ? 3 : 1;
+            setActiveLessonId(recommendedLessonId);
+            setOpenMods({ 1: true, 2: recommendedLessonId >= 5 });
+          }
+          setScreen("app");
+          setActiveNav("dashboard");
+        }}
+      />
+    );
+  }
 
   return (
     <div
@@ -297,7 +510,7 @@ export default function App() {
       {activeNav === "dashboard" && (
       <div
         style={{
-          height: 44,
+          height: density.topBarHeight,
           background: T.navBg,
           borderBottom: `1px solid ${T.border}`,
           display: "flex",
@@ -605,7 +818,7 @@ export default function App() {
       {/* Bottom ribbons (DaVinci resolve layout) */}
       <div
         style={{
-          height: 52,
+          height: density.bottomBarHeight,
           background: T.navBg,
           borderTop: `1px solid ${T.border}`,
           display: "flex",
@@ -629,7 +842,7 @@ export default function App() {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 1.5,
-                padding: "4px 6px",
+                padding: density.navPadding,
                 borderRadius: 8,
                 background: isActive ? T.accentDim : "none",
                 border: `1.5px solid ${isActive ? T.accent + "3c" : "transparent"}`,
@@ -638,7 +851,7 @@ export default function App() {
                 outline: "none"
               }}
             >
-              <span style={{ fontSize: 15, filter: isActive ? "none" : "grayscale(50%)" }}>{item.icon}</span>
+              <item.icon size={18} strokeWidth={isActive ? 2.2 : 1.9} color={isActive ? T.accent : T.txt1} />
               <span
                 style={{
                   fontSize: 8,
