@@ -1,6 +1,32 @@
 import React from "react";
 import { Module, ChatMessage } from "../types";
 
+const createNotebookCells = (lang: string) => [
+  {
+    type: "code",
+    content:
+      lang === "bn"
+        ? "import pandas as pd\nimport numpy as np\n\n# শিক্ষার্থীর তথ্য বিশ্লেষণ\ndf = pd.read_csv('data/students.csv')\ndf.head()"
+        : "import pandas as pd\nimport numpy as np\n\n# Baseline student records analysis\ndf = pd.read_csv('data/students.csv')\ndf.head()",
+    output: "   name  score  grade\n0  Alice     87      B\n1    Bob     92      A\n2  Carol     78      C"
+  },
+  {
+    type: "markdown",
+    content:
+      lang === "bn"
+        ? "## অনুসন্ধানমূলক বিশ্লেষণ\nআমরা ডেটার গড়, ছড়ানো মান এবং সম্ভাব্য ফাঁকা অংশগুলো দেখব।"
+        : "## Exploratory Analytics\nWe shall measure general dispersion ranges and identify potential empty slots."
+  },
+  {
+    type: "code",
+    content:
+      lang === "bn"
+        ? "# মান বিচ্যুতি যাচাই\ndf['score'].describe()"
+        : "# Standard deviation checks\ndf['score'].describe()",
+    output: "count    50.000000\nmean     82.340000\nstd       9.123000"
+  }
+];
+
 export default function NotebookScreen({
   T,
   t,
@@ -29,21 +55,12 @@ export default function NotebookScreen({
   lang: string;
 }) {
   const [cells, setCells] = React.useState([
-    {
-      type: "code",
-      content: "import pandas as pd\nimport numpy as np\n\n# Baseline student records analysis\ndf = pd.read_csv('data/students.csv')\ndf.head()",
-      output: "   name  score  grade\n0  Alice     87      B\n1    Bob     92      A\n2  Carol     78      C"
-    },
-    {
-      type: "markdown",
-      content: "## Exploratory Analytics\nWe shall measure general dispersion ranges and identify potential empty slots."
-    },
-    {
-      type: "code",
-      content: "# Standard deviation checks\ndf['score'].describe()",
-      output: "count    50.000000\nmean     82.340000\nstd       9.123000"
-    }
+    ...createNotebookCells(lang)
   ]);
+
+  React.useEffect(() => {
+    setCells(createNotebookCells(lang));
+  }, [lang]);
 
   const handleCellChange = (index: number, val: string) => {
     setCells((p) => {

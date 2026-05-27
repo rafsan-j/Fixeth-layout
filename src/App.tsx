@@ -56,6 +56,9 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [rightSidebarWidth, setRightSidebarWidth] = useState(290);
   const [isResizing, setIsResizing] = useState(false);
+  // Global user/profile state
+  const [user, setUser] = useState({ name: "Jawat", email: "jawat@example.com" });
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const activeModule = modules.find((mod) => mod.lessons.some((lesson) => lesson.id === activeLessonId)) ?? modules[0];
   const activeLesson = activeModule?.lessons.find((lesson) => lesson.id === activeLessonId) ?? activeModule?.lessons[0];
@@ -173,7 +176,7 @@ export default function App() {
   const renderScreen = () => {
     switch (activeNav) {
       case "dashboard":
-        return <DashboardScreen T={T} t={t} lang={lang} onContinue={() => setActiveNav("video")} />;
+        return <DashboardScreen T={T} t={t} lang={lang} onContinue={() => setActiveNav("video")} user={user} />;
       case "video":
         return (
           <GuidedVideoScreen
@@ -251,7 +254,7 @@ export default function App() {
       case "community":
         return <CommunityScreen T={T} t={t} lang={lang} />;
       case "certs":
-        return <CertificatesScreen T={T} t={t} lang={lang} />;
+        return <CertificatesScreen T={T} t={t} lang={lang} user={user} />;
       default:
         return <DashboardScreen T={T} t={t} lang={lang} />;
     }
@@ -376,22 +379,86 @@ export default function App() {
             BYOA: Active
           </span>
           
-          {/* Avatar sphere */}
-          <div
-            style={{
-              width: 26,
-              height: 26,
-              borderRadius: "50%",
-              background: T.accent,
-              color: "#000",
-              fontSize: 11,
-              fontWeight: 900,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            J
+          {/* Avatar sphere with profile menu */}
+          <div style={{ position: "relative" }}>
+            <div
+              onClick={() => setProfileOpen((s) => !s)}
+              title={user.name}
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: "50%",
+                background: T.accent,
+                color: "#000",
+                fontSize: 11,
+                fontWeight: 900,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                userSelect: "none"
+              }}
+            >
+              {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+            </div>
+
+            {profileOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: 34,
+                  background: T.bg1,
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 8,
+                  padding: 8,
+                  minWidth: 180,
+                  boxShadow: T.shadow,
+                  zIndex: 200
+                }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 800, color: T.txt0, padding: "6px 8px" }}>{user.name}</div>
+                <div style={{ height: 1, background: T.border, margin: "6px 0" }} />
+                <button
+                  onClick={() => {
+                    setProfileOpen(false);
+                    setActiveNav("dashboard");
+                  }}
+                  style={{ display: "block", width: "100%", padding: "8px", background: "none", border: "none", textAlign: "left", color: T.txt1, cursor: "pointer" }}
+                >
+                  {t.profileView}
+                </button>
+                <button
+                  onClick={() => {
+                    setProfileOpen(false);
+                    setActiveNav("tools");
+                  }}
+                  style={{ display: "block", width: "100%", padding: "8px", background: "none", border: "none", textAlign: "left", color: T.txt1, cursor: "pointer" }}
+                >
+                  {t.profileSettings}
+                </button>
+                <button
+                  onClick={() => {
+                    setIsDark(!isDark);
+                    setProfileOpen(false);
+                  }}
+                  style={{ display: "block", width: "100%", padding: "8px", background: "none", border: "none", textAlign: "left", color: T.txt1, cursor: "pointer" }}
+                >
+                  {t.profilePreferences}
+                </button>
+                <button
+                  onClick={() => {
+                    // simple sign out implementation
+                    setUser({ name: "Guest", email: "" });
+                    setProfileOpen(false);
+                    setScreen("onboarding");
+                  }}
+                  style={{ display: "block", width: "100%", padding: "8px", background: "none", border: "none", textAlign: "left", color: T.red, cursor: "pointer", fontWeight: 800 }}
+                >
+                  {t.profileSignOut}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

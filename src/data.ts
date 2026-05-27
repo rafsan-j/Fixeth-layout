@@ -120,6 +120,11 @@ export const i18n: { [key: string]: any } = {
     terminalLabel: "Bash Command Interactive Terminal Console",
     community: "Community AI",
     certs: "Certificates"
+    ,
+    profileView: "View Profile",
+    profileSettings: "Account Settings",
+    profilePreferences: "Preferences",
+    profileSignOut: "Sign out"
   },
   bn: {
     brand: "ফিক্সেথ",
@@ -179,6 +184,11 @@ export const i18n: { [key: string]: any } = {
     gitConnected: "গিটহাব সংযুক্ত আছে",
     fetchLocal: "লোকাল ফাইল টেনে আনুন / ওপেন করুন",
     terminalLabel: "ব্যাশ কমান্ড ইন্টারঅ্যাক্টিভ টার্মিনাল কনসোল"
+    ,
+    profileView: "প্রোফাইল দেখুন",
+    profileSettings: "অ্যাকাউন্ট সেটিংস",
+    profilePreferences: "পছন্দসমূহ",
+    profileSignOut: "সাইন আউট"
   }
 };
 

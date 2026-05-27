@@ -10,7 +10,7 @@ interface Certificate {
   score: number;
 }
 
-export default function CertificatesScreen({ T, t, lang }: { T: any; t: any; lang: string }) {
+export default function CertificatesScreen({ T, t, lang, user }: { T: any; t: any; lang: string; user?: { name: string } }) {
   const [activeTab, setActiveTab] = useState<"certs" | "verify">("certs");
   const [selectedCert, setSelectedCert] = useState<Certificate | null>(null);
 
@@ -386,7 +386,7 @@ export default function CertificatesScreen({ T, t, lang }: { T: any; t: any; lan
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: T.bg0, padding: 12, borderRadius: 8 }}>
                   <div>
                     <span style={{ fontSize: 9.5, color: T.txt1, display: "block" }}>{lang === "bn" ? "সার্টিফিকেটধারী" : "Recipient User"}</span>
-                    <strong style={{ fontSize: 11.5, color: T.txt0 }}>John Doe</strong>
+                    <strong style={{ fontSize: 11.5, color: T.txt0 }}>{user?.name ?? "John Doe"}</strong>
                   </div>
                   <div>
                     <span style={{ fontSize: 9.5, color: T.txt1, display: "block" }}>{lang === "bn" ? "ইস্যুর তারিখ" : "Issuance Date"}</span>
@@ -500,7 +500,7 @@ export default function CertificatesScreen({ T, t, lang }: { T: any; t: any; lan
                   {lang === "bn" ? "গর্বের সাথে প্রদান করা হচ্ছে:" : "THIS OFficiAL CREDENTIAL PROVES THAT"}
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 950, color: "#fff", fontFamily: "'DM Sans', sans-serif", letterSpacing: "-0.5px", margin: "10px 0" }}>
-                  John Doe
+                  {user?.name ?? "John Doe"}
                 </div>
                 <div style={{ fontSize: 11, color: T.txt1, marginBottom: 12 }}>
                   {lang === "bn" ? "সফলতার সাথে কোর্স সম্পন্ন করেছেন" : "has successfully fulfilled educational requirements & assessment modules for"}

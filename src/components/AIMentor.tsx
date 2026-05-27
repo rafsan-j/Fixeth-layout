@@ -8,6 +8,58 @@ interface Session {
   messages: ChatMessage[];
 }
 
+const createInitialSessions = (lang: string): Session[] => [
+  {
+    id: "scope-today",
+    title: lang === "bn" ? "ফাংশন ও স্কোপ" : "Functions & Scope",
+    subtitle: lang === "bn" ? "আজকে" : "Today",
+    messages: [
+      {
+        role: "ai",
+        text: lang === "bn"
+          ? "আমি আপনার ফিক্সেথ এআই মেন্টর। আমি আপনার অগ্রগতি, আপনার চ্যালেঞ্জ এবং আপনার লক্ষ্যগুলো জানি। আজ আপনি কি শিখতে চান?"
+          : "I'm your Fixeth AI Mentor. I know your progress, your struggles, and your goals. What would you like to work on today?"
+      },
+      {
+        role: "ai",
+        text: lang === "bn"
+          ? "বর্তমান বিষয়: লেসন ৩ (ফাংশন ও স্কোপ)। আপনি শেষ কুইজে ৯২% স্কোর করেছেন — চমৎকার কাজ! আপনি ৩ বার 'return' স্টেটমেন্ট সম্পর্কে জিজ্ঞাসা করেছেন — চলুন এটি নিয়ে আপনাকে আরও গভীরে আলোচনা করি।"
+          : "Current context: You're on Lesson 3 (Functions & Scope). You scored 92% on the last quiz — excellent work! You've asked about `return` statements 3 times — let me give you a deeper explanation."
+      }
+    ]
+  },
+  {
+    id: "control-flow",
+    title: lang === "bn" ? "কন্ট্রোল ফ্লো রিভিউ" : "Control Flow review",
+    subtitle: lang === "bn" ? "গতকাল" : "Yesterday",
+    messages: [
+      {
+        role: "user",
+        text: "How does `elif` block execute program instructions sequentially?"
+      },
+      {
+        role: "ai",
+        text: "In Python, the `elif` keyword stands for 'else if'. The interpreter evaluates expressions from top to bottom. Once a condition is true, its block runs and all subsequent checks evaluate as skipped."
+      }
+    ]
+  },
+  {
+    id: "variables-dive",
+    title: lang === "bn" ? "ভ্যারিয়েবলস ডিপ ডাইভ" : "Variables deep dive",
+    subtitle: lang === "bn" ? "২৪ মে" : "May 24",
+    messages: [
+      {
+        role: "user",
+        text: "What does local vs global mean?"
+      },
+      {
+        role: "ai",
+        text: "Local variables live inside function frames and allocate on stack when called. Global variables reside in globals() mapping of modules and persist for runtime lifespan."
+      }
+    ]
+  }
+];
+
 export default function AIMentorScreen({
   T,
   t,
@@ -56,62 +108,16 @@ export default function AIMentorScreen({
     }
   ]);
 
-  // Hardcoded initial mock sessions aligned with real UI behavior
-  const [sessions, setSessions] = useState<Session[]>([
-    {
-      id: "scope-today",
-      title: lang === "bn" ? "ফাংশন ও স্কোপ" : "Functions & Scope",
-      subtitle: lang === "bn" ? "আজকে" : "Today",
-      messages: [
-        {
-          role: "ai",
-          text: lang === "bn"
-            ? "আমি আপনার ফিক্সেথ এআই মেন্টর। আমি আপনার অগ্রগতি, আপনার চ্যালেঞ্জ এবং আপনার লক্ষ্যগুলো জানি। আজ আপনি কি শিখতে চান?"
-            : "I'm your Fixeth AI Mentor. I know your progress, your struggles, and your goals. What would you like to work on today?"
-        },
-        {
-          role: "ai",
-          text: lang === "bn"
-            ? "বর্তমান বিষয়: লেসন ৩ (ফাংশন ও স্কোপ)। আপনি শেষ কুইজে ৯২% স্কোর করেছেন — চমৎকার কাজ! আপনি ৩ বার 'return' স্টেটমেন্ট সম্পর্কে জিজ্ঞাসা করেছেন — চলুন এটি নিয়ে আপনাকে আরও গভীরে আলোচনা করি।"
-            : "Current context: You're on Lesson 3 (Functions & Scope). You scored 92% on the last quiz — excellent work! You've asked about `return` statements 3 times — let me give you a deeper explanation."
-        }
-      ]
-    },
-    {
-      id: "control-flow",
-      title: lang === "bn" ? "কন্ট্রোল ফ্লো রিভিউ" : "Control Flow review",
-      subtitle: lang === "bn" ? "গতকাল" : "Yesterday",
-      messages: [
-        {
-          role: "user",
-          text: "How does `elif` block execute program instructions sequentially?"
-        },
-        {
-          role: "ai",
-          text: "In Python, the `elif` keyword stands for 'else if'. The interpreter evaluates expressions from top to bottom. Once a condition is true, its block runs and all subsequent checks evaluate as skipped."
-        }
-      ]
-    },
-    {
-      id: "variables-dive",
-      title: lang === "bn" ? "ভ্যারিয়েবলস ডিপ ডাইভ" : "Variables deep dive",
-      subtitle: lang === "bn" ? "২৪ মে" : "May 24",
-      messages: [
-        {
-          role: "user",
-          text: "What does local vs global mean?"
-        },
-        {
-          role: "ai",
-          text: "Local variables live inside function frames and allocate on stack when called. Global variables reside in globals() mapping of modules and persist for runtime lifespan."
-        }
-      ]
-    }
-  ]);
+  const [sessions, setSessions] = useState<Session[]>(() => createInitialSessions(lang));
 
   const [activeSessionId, setActiveSessionId] = useState<string>("scope-today");
 
   const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
+
+  useEffect(() => {
+    setSessions(createInitialSessions(lang));
+    setActiveSessionId("scope-today");
+  }, [lang]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });

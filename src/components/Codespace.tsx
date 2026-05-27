@@ -313,7 +313,6 @@ export default function CodeSpaceScreen({ T, t }: { T: any; t: any }) {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                paddingType: "10px 0",
                 fontSize: 11,
                 fontFamily: "monospace",
                 color: "#444",

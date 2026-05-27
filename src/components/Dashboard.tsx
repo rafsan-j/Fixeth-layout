@@ -1,7 +1,7 @@
 import React from "react";
 import { themes } from "../data";
 
-export default function DashboardScreen({ T, t, lang, onContinue }: { T: any; t: any; lang: string; onContinue: () => void }) {
+export default function DashboardScreen({ T, t, lang, onContinue, user }: { T: any; t: any; lang: string; onContinue: () => void; user?: { name: string } }) {
   const skills = [
     ["Python & Numpy", "+47%"],
     ["Pandas ETL", "+32%"],
@@ -43,7 +43,7 @@ export default function DashboardScreen({ T, t, lang, onContinue }: { T: any; t:
         >
           <div>
             <h2 style={{ fontSize: 21, fontWeight: 900, color: T.txt0, margin: "0 0 6px" }}>
-              {t.greeting}, Jawat 👋
+              {t.greeting}, {user?.name ?? (lang === "bn" ? "বন্ধু" : "Learner")} 👋
             </h2>
             <p style={{ color: T.txt1, fontSize: 13, margin: "0 0 14px", lineHeight: 1.4 }}>
               {lang === "bn"
