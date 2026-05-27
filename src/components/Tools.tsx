@@ -15,6 +15,7 @@ export default function ToolsScreen({ T, t }: { T: any; t: any }) {
   });
   const [dataSaver, setDataSaver] = useState(false);
   const [selectedMirror, setSelectedMirror] = useState("auto");
+  const [resourceToast, setResourceToast] = useState<string | null>(null);
 
   const triggerSpeedTest = () => {
     setBdixStatus({
@@ -38,6 +39,21 @@ export default function ToolsScreen({ T, t }: { T: any; t: any }) {
     { id: "claude", name: "Anthropic Claude", tier: "Pay-as-you-go", icon: "✦" },
     { id: "ollama", name: "Ollama (Local AI)", tier: "100% Free", icon: "🦙" }
   ];
+
+  const resources: { name: string; icon: string; color: string; url: string }[] = [
+    { name: "NumPy Docs", icon: "📘", color: T.blue, url: "https://numpy.org/doc/" },
+    { name: "Pandas Cheatsheet", icon: "📄", color: T.accent, url: "https://pandas.pydata.org/docs/" },
+    { name: "Git Commands", icon: "📋", color: T.amber, url: "https://git-scm.com/docs" },
+    { name: "Scikit-learn API", icon: "🔬", color: T.purple, url: "https://scikit-learn.org/stable/modules/classes.html" },
+    { name: "Python REPL", icon: "💻", color: T.accent, url: "https://docs.python.org/3/tutorial/interpreter.html" },
+    { name: "Regex Tester", icon: "🔍", color: T.red, url: "https://regex101.com/" }
+  ];
+
+  const openResource = (resource: { name: string; url: string }) => {
+    window.open(resource.url, "_blank", "noopener,noreferrer");
+    setResourceToast(`Opened ${resource.name}`);
+    setTimeout(() => setResourceToast(null), 1700);
+  };
 
   return (
     <div style={{ flex: 1, overflowY: "auto", background: T.bg0 }}>
@@ -165,6 +181,34 @@ export default function ToolsScreen({ T, t }: { T: any; t: any }) {
               </button>
             </div>
           )}
+        </div>
+
+        {/* Resource Library */}
+        <div style={{ background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 14, padding: "22px", boxShadow: T.shadow, marginBottom: 20 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: T.txt0, marginBottom: 14 }}>📚 Resource Library</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
+            {resources.map((resource) => (
+              <button
+                key={resource.name}
+                onClick={() => openResource(resource)}
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  alignItems: "center",
+                  padding: "10px 12px",
+                  background: T.bg2,
+                  borderRadius: 8,
+                  border: `1px solid ${T.border}`,
+                  cursor: "pointer",
+                  textAlign: "left"
+                }}
+              >
+                <span style={{ fontSize: 16 }}>{resource.icon}</span>
+                <span style={{ fontSize: 12, color: T.txt0, fontWeight: 500 }}>{resource.name}</span>
+                <span style={{ marginLeft: "auto", fontSize: 10, color: resource.color }}>→</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Live Job Index Synchronizer */}
@@ -353,6 +397,26 @@ export default function ToolsScreen({ T, t }: { T: any; t: any }) {
         </div>
 
       </div>
+
+      {resourceToast && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 24,
+            right: 24,
+            background: T.accent,
+            color: "#000",
+            padding: "10px 14px",
+            borderRadius: 8,
+            boxShadow: T.shadow,
+            fontSize: 11,
+            fontWeight: 800,
+            zIndex: 120
+          }}
+        >
+          {resourceToast}
+        </div>
+      )}
     </div>
   );
 }

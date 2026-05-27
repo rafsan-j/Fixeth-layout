@@ -62,7 +62,7 @@ export default function CertificatesScreen({ T, t, lang, user }: { T: any; t: an
   };
 
   const copyVerifyLink = (id: string) => {
-    const link = `https://shikhon.ai/verify?id=${id}`;
+    const link = `https://fixeth.ai/verify?id=${id}`;
     navigator.clipboard.writeText(link).then(() => {
       showToast(lang === "bn" ? "যাচাইকরণ লিংক ক্লিপবোর্ডে কপি হয়েছে!" : "Verification URL copied to Clipboard!");
     });
@@ -325,7 +325,7 @@ export default function CertificatesScreen({ T, t, lang, user }: { T: any; t: an
             <p style={{ fontSize: 11, color: T.txt1, margin: "0 0 20px" }}>
               {lang === "bn"
                 ? "আমাদের যেকোনো সার্টিফিকেটের ইউনিক ক্রডেন্সিয়াল আইডি প্রদান কারুন, সিস্টেম স্বয়ংক্রিয়ভাবে ব্লকচেইন প্রমাণ প্যানেল থেকে বৈধতা যাচাই করবে।"
-                : "Enter any Shikhon AI or Fixeth certificate ID to instantly evaluate authentic issuance dates and performance metrics."}
+                : "Enter any Fixeth certificate ID to instantly evaluate authentic issuance dates and performance metrics."}
             </p>
 
             <label style={{ fontSize: 11, fontWeight: 700, color: T.txt0, display: "block", marginBottom: 6 }}>
@@ -380,7 +380,7 @@ export default function CertificatesScreen({ T, t, lang, user }: { T: any; t: an
               >
                 <div style={{ fontSize: 12.5, fontWeight: 800, color: T.accent, display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
                   <span>✓</span>
-                  {lang === "bn" ? "সত্যতা সফল — এটি একটি বৈধ শাফায়েত এআই ডিজিটাল সার্টিফিকেট" : "Credential Verified — Authentic Shikhon AI Ledger Record"}
+                  {lang === "bn" ? "সত্যতা সফল — এটি একটি বৈধ Fixeth ডিজিটাল সার্টিফিকেট" : "Credential Verified — Authentic Fixeth Ledger Record"}
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: T.bg0, padding: 12, borderRadius: 8 }}>
@@ -490,7 +490,7 @@ export default function CertificatesScreen({ T, t, lang, user }: { T: any; t: an
                 <div style={{ position: "absolute", bottom: 10, right: 10, borderBottom: `2px solid ${T.accent}`, borderRight: `2px solid ${T.accent}`, width: 14, height: 14 }} />
 
                 <h2 style={{ fontFamily: "Georgia, serif", fontSize: 24, fontStyle: "italic", margin: "0 0 4px", color: T.accent, letterSpacing: "1px" }}>
-                  Shikhon AI
+                  Fixeth
                 </h2>
                 <div style={{ fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "2px", color: T.txt1, display: "block", marginBottom: 20 }}>
                   {lang === "bn" ? "সাফল্যের সনদপত্র" : "Certificate of Completion"}
@@ -518,7 +518,7 @@ export default function CertificatesScreen({ T, t, lang, user }: { T: any; t: an
                 <div style={{ display: "flex", justifyContent: "space-around", gap: 16, marginTop: 20, borderTop: `1px solid ${T.border}`, paddingTop: 16 }}>
                   <div>
                     <span style={{ fontSize: 12, fontFamily: "Georgia, serif", fontStyle: "italic", color: "#fff", display: "block" }}>Dr. R. Khan</span>
-                    <span style={{ fontSize: 8.5, color: T.txt1, display: "block", marginTop: 2 }}>{lang === "bn" ? "পরিচালক, শিখন একাডেমি" : "Director, Shikhon Academy"}</span>
+                    <span style={{ fontSize: 8.5, color: T.txt1, display: "block", marginTop: 2 }}>{lang === "bn" ? "পরিচালক, ফিক্সেথ একাডেমি" : "Director, Fixeth Academy"}</span>
                   </div>
                   <div>
                     <span style={{ fontSize: 12, fontFamily: "monospace", color: "#fff", display: "block" }}>{selectedCert.date}</span>
@@ -528,7 +528,7 @@ export default function CertificatesScreen({ T, t, lang, user }: { T: any; t: an
 
                 {/* Certificate blockchain ID */}
                 <span style={{ display: "block", fontSize: 9, color: T.txt2, fontFamily: "monospace", marginTop: 24 }}>
-                  Verification Ledger: shikhon.ai/verify?id={selectedCert.id}
+                  Verification Ledger: fixeth.ai/verify?id={selectedCert.id}
                 </span>
               </div>
             </div>

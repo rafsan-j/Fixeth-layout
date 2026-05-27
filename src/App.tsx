@@ -14,6 +14,7 @@ import ToolsScreen from "./components/Tools";
 import AIMentorScreen from "./components/AIMentor";
 import CommunityScreen from "./components/Community";
 import CertificatesScreen from "./components/Certificates";
+import ProfileSettingsScreen from "./components/ProfileSettings";
 import { CourseExplorerSidebar, AIChatSidebar } from "./components/Sidebar";
 
 const CORE_MODULES: Module[] = [
@@ -57,8 +58,10 @@ export default function App() {
   const [rightSidebarWidth, setRightSidebarWidth] = useState(290);
   const [isResizing, setIsResizing] = useState(false);
   // Global user/profile state
-  const [user, setUser] = useState({ name: "Jawat", email: "jawat@example.com" });
+  const [user, setUser] = useState({ name: "Jawat", email: "jawat@example.com", title: "Learner", location: "Dhaka, Bangladesh", bio: "Focused on practical, job-ready engineering skills." });
   const [profileOpen, setProfileOpen] = useState(false);
+  const [profileTab, setProfileTab] = useState<"profile" | "account" | "preferences">("profile");
+  const [profileReturnNav, setProfileReturnNav] = useState("dashboard");
 
   const activeModule = modules.find((mod) => mod.lessons.some((lesson) => lesson.id === activeLessonId)) ?? modules[0];
   const activeLesson = activeModule?.lessons.find((lesson) => lesson.id === activeLessonId) ?? activeModule?.lessons[0];
@@ -255,8 +258,23 @@ export default function App() {
         return <CommunityScreen T={T} t={t} lang={lang} />;
       case "certs":
         return <CertificatesScreen T={T} t={t} lang={lang} user={user} />;
+      case "profile":
+        return (
+          <ProfileSettingsScreen
+            T={T}
+            t={t}
+            lang={lang}
+            isDark={isDark}
+            user={user}
+            initialTab={profileTab}
+            onBack={() => setActiveNav(profileReturnNav || "dashboard")}
+            onSaveUser={setUser}
+            onSetLang={setLang}
+            onToggleTheme={() => setIsDark((prev) => !prev)}
+          />
+        );
       default:
-        return <DashboardScreen T={T} t={t} lang={lang} />;
+        return <DashboardScreen T={T} t={t} lang={lang} onContinue={() => setActiveNav("video")} user={user} />;
     }
   };
 
@@ -276,6 +294,7 @@ export default function App() {
       }}
     >
       {/* Top action header block */}
+      {activeNav === "dashboard" && (
       <div
         style={{
           height: 44,
@@ -422,7 +441,9 @@ export default function App() {
                 <button
                   onClick={() => {
                     setProfileOpen(false);
-                    setActiveNav("dashboard");
+                    setProfileReturnNav(activeNav);
+                    setProfileTab("profile");
+                    setActiveNav("profile");
                   }}
                   style={{ display: "block", width: "100%", padding: "8px", background: "none", border: "none", textAlign: "left", color: T.txt1, cursor: "pointer" }}
                 >
@@ -431,7 +452,9 @@ export default function App() {
                 <button
                   onClick={() => {
                     setProfileOpen(false);
-                    setActiveNav("tools");
+                    setProfileReturnNav(activeNav);
+                    setProfileTab("account");
+                    setActiveNav("profile");
                   }}
                   style={{ display: "block", width: "100%", padding: "8px", background: "none", border: "none", textAlign: "left", color: T.txt1, cursor: "pointer" }}
                 >
@@ -439,8 +462,10 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => {
-                    setIsDark(!isDark);
                     setProfileOpen(false);
+                    setProfileReturnNav(activeNav);
+                    setProfileTab("preferences");
+                    setActiveNav("profile");
                   }}
                   style={{ display: "block", width: "100%", padding: "8px", background: "none", border: "none", textAlign: "left", color: T.txt1, cursor: "pointer" }}
                 >
@@ -449,7 +474,7 @@ export default function App() {
                 <button
                   onClick={() => {
                     // simple sign out implementation
-                    setUser({ name: "Guest", email: "" });
+                    setUser({ name: "Guest", email: "", title: "", location: "", bio: "" });
                     setProfileOpen(false);
                     setScreen("onboarding");
                   }}
@@ -462,6 +487,7 @@ export default function App() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Primary content card viewport */}
       <div style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}>
