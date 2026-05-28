@@ -64,6 +64,39 @@ export default function Analytics({ T, t, lang, user, evaluation, modules = [], 
     }))
   );
 
+  const orderedLessons = modules.flatMap((module) => module.lessons);
+  const progressSeries = orderedLessons.reduce<{ index: number; completed: number; pct: number }[]>((series, lesson, index) => {
+    const completedSoFar = orderedLessons.slice(0, index + 1).filter((item) => item.done).length;
+    const pct = Math.round((completedSoFar / (index + 1)) * 100);
+    series.push({ index: index + 1, completed: completedSoFar, pct });
+    return series;
+  }, []);
+
+  const linePoints = progressSeries.length > 1
+    ? progressSeries.map((point, index) => {
+        const x = (index / (progressSeries.length - 1)) * 100;
+        const y = 100 - point.pct;
+        return `${x},${y}`;
+      }).join(" ")
+    : "0,100 100,100";
+
+  const donutRadius = 42;
+  const donutCircumference = 2 * Math.PI * donutRadius;
+  const donutOffset = donutCircumference * (1 - completionPct / 100);
+
+  const moduleChartRows = modules.map((module) => {
+    const done = module.lessons.filter((lesson) => lesson.done).length;
+    const total = module.lessons.length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    return {
+      title: module.title,
+      pct,
+      done,
+      total,
+      active: currentModule?.title === module.title
+    };
+  });
+
   const assessmentSummary = (() => {
     if (!hasAssessment) {
       return {
@@ -240,9 +273,26 @@ export default function Analytics({ T, t, lang, user, evaluation, modules = [], 
     </div>
   );
 
+  const ChartCard = ({ title, icon: Icon, children, subtitle }: { title: string; icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>; children: React.ReactNode; subtitle?: string }) => (
+    <div style={{ background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 18, padding: 18, boxShadow: T.shadow }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: `${T.accent}18`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon size={18} color={T.accent} strokeWidth={2.2} />
+          </div>
+          <div>
+            <h2 style={{ fontSize: 15, fontWeight: 900, color: T.txt0, margin: 0 }}>{title}</h2>
+            {subtitle && <div style={{ marginTop: 3, fontSize: 11.5, color: T.txt2 }}>{subtitle}</div>}
+          </div>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+
   return (
     <div style={{ flex: 1, overflowY: "auto", background: T.bg0 }}>
-      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "20px 16px 40px" }}>
+      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "20px 16px 32px" }}>
         <div
           style={{
             background: `linear-gradient(135deg, ${T.bg1} 0%, ${T.accent}10 100%)`,
@@ -286,20 +336,111 @@ export default function Analytics({ T, t, lang, user, evaluation, modules = [], 
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12, marginBottom: 18 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12, marginBottom: 16 }}>
           {learningPulse.map((item) => (
             <MetricCard key={item.label} icon={item.icon} label={item.label} value={item.value} note={item.note} color={item.color} />
           ))}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12, marginBottom: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12, marginBottom: 16 }}>
           <TinyStat label={lang === "bn" ? "সম্পন্ন বনাম বাকি" : "Completed vs remaining"} value={`${completedLessons}/${remainingLessons}`} hint={lang === "bn" ? "লেসন-স্তরের অগ্রগতি" : "Lesson-level balance"} />
           <TinyStat label={lang === "bn" ? "বর্তমান ট্র্যাক" : "Current track"} value={currentModule?.title?.split(" ")[0] ?? "--"} hint={lang === "bn" ? "সক্রিয় অধ্যায়টি ট্র্যাক করুন" : "Track the active chapter"} />
           <TinyStat label={lang === "bn" ? "আসন্ন পাঠ" : "Next lesson"} value={nextLesson?.title?.slice(0, 18) ?? (lang === "bn" ? "নেই" : "None")} hint={lang === "bn" ? "এরপর কী খুলবে" : "What unlocks next"} />
           <TinyStat label={lang === "bn" ? "মূল্যায়ন স্তর" : "Assessment band"} value={assessmentBand ?? (lang === "bn" ? "অপেক্ষমাণ" : "Pending")} hint={lang === "bn" ? "স্কোর-ভিত্তিক ব্যাখ্যা" : "Score-based interpretation"} />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 16, marginBottom: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16, marginBottom: 16 }}>
+          <ChartCard title={lang === "bn" ? "অবিচ্ছিন্ন অগ্রগতি গ্রাফ" : "Continuous progress graph"} subtitle={lang === "bn" ? "লেসন ধরে কীভাবে অগ্রগতি বদলেছে" : "How progress changes lesson by lesson"} icon={TrendingUp}>
+            <div style={{ height: 220, background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 14, padding: 14 }}>
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%" aria-label="Progress trend chart">
+                <defs>
+                  <linearGradient id="progressLine" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={T.accent} stopOpacity="0.35" />
+                    <stop offset="100%" stopColor={T.accent} stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                {[20, 40, 60, 80].map((line) => (
+                  <line key={line} x1="0" y1={line} x2="100" y2={line} stroke={T.border} strokeWidth="0.8" strokeDasharray="2 3" opacity="0.75" />
+                ))}
+                <polyline points={`0,100 ${linePoints}`} fill="none" stroke={T.accent} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+                <polygon points={`0,100 ${linePoints} 100,100`} fill="url(#progressLine)" opacity="0.9" />
+                {progressSeries.map((point, index) => {
+                  const x = progressSeries.length > 1 ? (index / (progressSeries.length - 1)) * 100 : 100;
+                  const y = 100 - point.pct;
+                  return <circle key={index} cx={x} cy={y} r="1.9" fill={point.pct >= 50 ? T.accent : T.amber || "#F5A623"} />;
+                })}
+              </svg>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10, gap: 10, fontSize: 11.5, color: T.txt1 }}>
+              <span>{lang === "bn" ? "শুরু" : "Start"}</span>
+              <span>{lang === "bn" ? "বর্তমান" : "Current"}</span>
+            </div>
+          </ChartCard>
+
+          <ChartCard title={lang === "bn" ? "সম্পূর্ণ বনাম বাকি" : "Completed vs remaining"} subtitle={lang === "bn" ? "মোট কারিকুলামের ভাগ" : "Curriculum split"} icon={Gauge}>
+            <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 14, alignItems: "center" }}>
+              <div style={{ position: "relative", width: 120, height: 120, margin: "0 auto" }}>
+                <svg viewBox="0 0 120 120" width="120" height="120" aria-label="Completion donut">
+                  <circle cx="60" cy="60" r={donutRadius} fill="none" stroke={T.bg3} strokeWidth="14" />
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r={donutRadius}
+                    fill="none"
+                    stroke={T.accent}
+                    strokeWidth="14"
+                    strokeLinecap="round"
+                    strokeDasharray={donutCircumference}
+                    strokeDashoffset={donutOffset}
+                    transform="rotate(-90 60 60)"
+                  />
+                </svg>
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+                  <div style={{ fontSize: 24, fontWeight: 950, color: T.txt0 }}>{completionPct}%</div>
+                  <div style={{ fontSize: 10, color: T.txt2, fontWeight: 700 }}>{lang === "bn" ? "পূর্ণ" : "done"}</div>
+                </div>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <TinyStat label={lang === "bn" ? "সম্পন্ন" : "Completed"} value={`${completedLessons}`} hint={lang === "bn" ? "সমাপ্ত পাঠ" : "Finished lessons"} />
+                <TinyStat label={lang === "bn" ? "বাকি" : "Remaining"} value={`${remainingLessons}`} hint={lang === "bn" ? "এখনও খোলা পাঠ" : "Still open lessons"} />
+              </div>
+            </div>
+          </ChartCard>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16, marginBottom: 16 }}>
+          <ChartCard title={lang === "bn" ? "মডিউল পারফরম্যান্স" : "Module performance"} subtitle={lang === "bn" ? "প্রতি অধ্যায়ে অগ্রগতির তুলনা" : "Comparative progress by module"} icon={Layers3}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {moduleChartRows.map((row) => (
+                <div key={row.title}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginBottom: 6 }}>
+                    <div style={{ fontSize: 12.5, color: T.txt0, fontWeight: 850, lineHeight: 1.4 }}>{row.title}</div>
+                    <div style={{ fontSize: 11.5, color: row.active ? T.accent : T.txt2, fontWeight: 800 }}>{row.pct}%</div>
+                  </div>
+                  <div style={{ height: 12, background: T.bg3, border: `1px solid ${T.border}`, borderRadius: 999, overflow: "hidden" }}>
+                    <div style={{ width: `${row.pct}%`, height: "100%", borderRadius: 999, background: row.active ? `linear-gradient(90deg, ${T.accent}, ${T.accentHi || T.accent})` : `linear-gradient(90deg, ${T.blue || "#4A9EFF"}, ${T.blueDim || "#4A9EFF18"})` }} />
+                  </div>
+                  <div style={{ marginTop: 6, fontSize: 11, color: T.txt2, lineHeight: 1.45 }}>
+                    {lang === "bn"
+                      ? `${row.done}/${row.total} সম্পন্ন`
+                      : `${row.done}/${row.total} completed`}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ChartCard>
+
+          <ChartCard title={lang === "bn" ? "অ্যাসেসমেন্ট প্রভাব" : "Assessment impact"} subtitle={lang === "bn" ? "স্কোর থাকলে কী পরিবর্তন হবে" : "What changes when a score exists"} icon={Award}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+              <TinyStat label={lang === "bn" ? "শক্তি সিগন্যাল" : "Strength signal"} value={hasAssessment ? (scorePct && scorePct >= 80 ? "High" : scorePct && scorePct >= 60 ? "Medium" : "Low") : "--"} hint={lang === "bn" ? "ডায়াগনস্টিক শেষে" : "After diagnostic"} />
+              <TinyStat label={lang === "bn" ? "ঝুঁকি সিগন্যাল" : "Risk signal"} value={hasAssessment ? (scorePct && scorePct < 60 ? "High" : "Low") : "--"} hint={lang === "bn" ? "রিটেকের জন্য" : "For retake planning"} />
+              <TinyStat label={lang === "bn" ? "ফোকাস এলাকা" : "Focus area"} value={currentModule?.title?.split(" ")[0] ?? "--"} hint={lang === "bn" ? "এখন কোথায় কাজ করুন" : "Where to work next"} />
+              <TinyStat label={lang === "bn" ? "রিপোর্ট স্টেট" : "Report state"} value={hasAssessment ? (lang === "bn" ? "ডাইনামিক" : "Dynamic") : (lang === "bn" ? "খোলা" : "Open")} hint={lang === "bn" ? "ব্যক্তিগত ডেটা আপডেট" : "Personal data updated"} />
+            </div>
+          </ChartCard>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16, marginBottom: 16 }}>
           <SectionCard title={lang === "bn" ? "বর্তমান অধ্যায়ের অবস্থা" : "Current chapter status"} icon={Target}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
               <div>
@@ -360,7 +501,7 @@ export default function Analytics({ T, t, lang, user, evaluation, modules = [], 
           </SectionCard>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 16 }}>
           <SectionCard title={lang === "bn" ? "মডিউল রিপোর্ট" : "Module report"} icon={Layers3}>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {moduleRows.map((module) => (
@@ -435,7 +576,7 @@ export default function Analytics({ T, t, lang, user, evaluation, modules = [], 
           </div>
         </SectionCard>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 16 }}>
           <SectionCard title={lang === "bn" ? "আপনার জন্য ঠিক এখন কী করা উচিত" : "What to do next"} icon={Sparkles}>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {recommendations.map((item, index) => (
@@ -450,7 +591,7 @@ export default function Analytics({ T, t, lang, user, evaluation, modules = [], 
           </SectionCard>
 
           <SectionCard title={lang === "bn" ? "অগ্রগতি সিগন্যাল" : "Progress signals"} icon={TrendingUp}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10 }}>
               <div style={{ padding: 12, borderRadius: 12, background: T.bg2, border: `1px solid ${T.border}` }}>
                 <div style={{ fontSize: 11, color: T.txt2, fontWeight: 800, marginBottom: 4 }}>{lang === "bn" ? "মোট পাঠ" : "Total lessons"}</div>
                 <div style={{ fontSize: 20, color: T.txt0, fontWeight: 950 }}>{totalLessons}</div>

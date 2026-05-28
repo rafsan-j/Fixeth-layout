@@ -2,8 +2,49 @@ import React from "react";
 import { themes } from "../data";
 import { AlertCircle, CheckCircle2, ArrowRight, BookOpen, Star, Bot, Award, Trophy, Flame } from "lucide-react";
 import ContentTemplates from "./ContentTemplates";
+import { Module, UserEvaluation } from "../types";
 
-export default function DashboardScreen({ T, t, lang, onContinue, user, evaluation, onStartAssessment }: { T: any; t: any; lang: string; onContinue: () => void; user?: { name: string }; evaluation?: any; onStartAssessment?: () => void }) {
+export default function DashboardScreen({
+  T,
+  t,
+  lang,
+  onContinue,
+  user,
+  evaluation,
+  modules = [],
+  activeLessonId,
+  weeklyGoal = 4,
+  onStartAssessment
+}: {
+  T: any;
+  t: any;
+  lang: string;
+  onContinue: () => void;
+  user?: { name: string };
+  evaluation?: UserEvaluation | null;
+  modules?: Module[];
+  activeLessonId?: number;
+  weeklyGoal?: number;
+  onStartAssessment?: () => void;
+}) {
+  const totalLessons = modules.reduce((count, module) => count + module.lessons.length, 0);
+  const completedLessons = modules.reduce((count, module) => count + module.lessons.filter((lesson) => lesson.done).length, 0);
+  const currentModule = modules.find((module) => module.lessons.some((lesson) => lesson.id === activeLessonId)) ?? modules[0];
+  const currentModuleCompleted = currentModule ? currentModule.lessons.filter((lesson) => lesson.done).length : 0;
+  const currentModuleTotal = currentModule?.lessons.length ?? 0;
+  const currentModulePct = currentModuleTotal ? Math.round((currentModuleCompleted / currentModuleTotal) * 100) : 0;
+  const scorePct = typeof evaluation?.percentage === "number"
+    ? evaluation.percentage
+    : typeof evaluation?.score === "number"
+      ? Math.round((evaluation.score / 10) * 100)
+      : undefined;
+  const certificateCount = modules.filter((module) => module.lessons.length > 0 && module.lessons.every((lesson) => lesson.done)).length;
+  const activityProgress = `${Math.min(completedLessons, weeklyGoal)}/${weeklyGoal}`;
+  const assessmentLabel = evaluation?.skipped
+    ? (lang === "bn" ? "অপেক্ষমাণ" : "Pending")
+    : typeof scorePct === "number"
+      ? `${scorePct}%`
+      : (lang === "bn" ? "অপেক্ষমাণ" : "Pending");
   const skills = [
     ["Python & Numpy", "+47%"],
     ["Pandas ETL", "+32%"],
@@ -11,6 +52,18 @@ export default function DashboardScreen({ T, t, lang, onContinue, user, evaluati
     ["SQL Databases", "+25%"],
     ["React Framework", "+22%"],
     ["Git Versioning", "+18%"]
+  ];
+  const trackRows = [
+    {
+      name: lang === "bn" ? "ডেটা সায়েন্স ট্র্যাক" : "Data Science & AI",
+      pct: currentModule?.id === 1 ? currentModulePct : Math.min(100, Math.max(0, Math.round((completedLessons / Math.max(totalLessons || 1, 1)) * 100))),
+      label: currentModule?.title ?? (lang === "bn" ? "সক্রিয় মডিউল" : "Active module")
+    },
+    {
+      name: lang === "bn" ? "ডিজিটাল লিটারেসি" : "Digital Literacy Fundamentals",
+      pct: modules[1]?.lessons.length ? Math.round((modules[1].lessons.filter((lesson) => lesson.done).length / modules[1].lessons.length) * 100) : 0,
+      label: lang === "bn" ? `${modules[1]?.lessons.filter((lesson) => lesson.done).length ?? 0} / ${modules[1]?.lessons.length ?? 0} সম্পন্ন` : `${modules[1]?.lessons.filter((lesson) => lesson.done).length ?? 0} / ${modules[1]?.lessons.length ?? 0} done`
+    }
   ];
 
   const histories = [
@@ -94,7 +147,7 @@ export default function DashboardScreen({ T, t, lang, onContinue, user, evaluati
               {t.continueBtn}
             </button>
             <span style={{ fontSize: 10, color: T.txt1 }}>
-              Syllabus Progress · <strong style={{ color: T.accent }}>32%</strong>
+              Syllabus Progress · <strong style={{ color: T.accent }}>{totalLessons ? Math.round((completedLessons / totalLessons) * 100) : 0}%</strong>
             </span>
           </div>
         </div>
@@ -179,12 +232,12 @@ export default function DashboardScreen({ T, t, lang, onContinue, user, evaluati
 
 
         {/* Dynamic Metric Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12, marginBottom: 20 }}>
           {[
-            { icon: BookOpen, label: t.lessonsCompleted, value: "3", color: T.accent },
-            { icon: Star, label: t.quizAvg, value: "88%", color: T.amber },
-            { icon: Flame, label: t.streak, value: "12 days", color: "#FF5B8A" },
-            { icon: Trophy, label: t.certificates, value: "3", color: T.blue }
+            { icon: BookOpen, label: t.lessonsCompleted, value: `${completedLessons}/${totalLessons || 0}`, color: T.accent, note: lang === "bn" ? "কোর্স-স্তরের অগ্রগতি" : "Course-level progress" },
+            { icon: Star, label: t.quizAvg, value: assessmentLabel, color: T.amber, note: evaluation?.skipped ? (lang === "bn" ? "ডায়াগনস্টিক বাকি" : "Diagnostic pending") : (lang === "bn" ? "সর্বশেষ স্কোর" : "Latest score") },
+            { icon: Flame, label: t.streak, value: activityProgress, color: "#FF5B8A", note: lang === "bn" ? "সাপ্তাহিক লক্ষ্য" : "Weekly goal" },
+            { icon: Trophy, label: t.certificates, value: `${certificateCount}`, color: T.blue, note: lang === "bn" ? "পূর্ণ মডিউল" : "Completed modules" }
           ].map((card, idx) => (
             <div
               key={idx}
@@ -202,6 +255,7 @@ export default function DashboardScreen({ T, t, lang, onContinue, user, evaluati
               <div>
                 <div style={{ fontSize: 10, color: T.txt1, fontWeight: 700, textTransform: "uppercase" }}>{card.label}</div>
                 <div style={{ fontSize: 18, fontWeight: 900, color: T.txt0, marginTop: 4 }}>{card.value}</div>
+                <div style={{ fontSize: 10.5, color: T.txt1, marginTop: 4, lineHeight: 1.4 }}>{card.note}</div>
               </div>
               <div
                 style={{
@@ -221,17 +275,14 @@ export default function DashboardScreen({ T, t, lang, onContinue, user, evaluati
         </div>
 
         {/* Progress & Target Section */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 16, marginBottom: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16, marginBottom: 20 }}>
           
           {/* My tracks progress */}
           <div style={{ background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 12, padding: 18, boxShadow: T.shadow }}>
             <h3 style={{ fontSize: 13.5, fontWeight: 800, color: T.txt0, margin: "0 0 14px" }}>
               {t.activeTrack}
             </h3>
-            {[
-              { name: lang === "bn" ? "ডেটা সায়েন্স ট্র্যাকিং" : "Data Science & AI", pct: 32, label: "Module 1 of 12" },
-              { name: lang === "bn" ? "ডিজিটাল লিটারেসি বেসিক্স" : "Digital Literacy Fundamentals", pct: 100, label: "Module 6 of 6 Completed" }
-            ].map((track, i) => (
+            {trackRows.map((track, i) => (
               <div key={i} style={{ borderBottom: i < 1 ? `1px solid ${T.border}` : "none", paddingBottom: i < 1 ? 14 : 0, paddingTop: i > 0 ? 14 : 0 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: T.txt0, marginBottom: 4, fontWeight: 700 }}>
                   <span>{track.name}</span>
@@ -268,11 +319,11 @@ export default function DashboardScreen({ T, t, lang, onContinue, user, evaluati
                 />
               </svg>
               <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontSize: 16, fontWeight: 900, color: T.txt0 }}>3 / 4</span>
+                <span style={{ fontSize: 16, fontWeight: 900, color: T.txt0 }}>{activityProgress}</span>
                 <span style={{ fontSize: 8, color: T.txt1 }}>Classes Done</span>
               </div>
             </div>
-            <span style={{ fontSize: 11, color: T.txt1 }}>One more lecture completes this weekly cluster!</span>
+            <span style={{ fontSize: 11, color: T.txt1 }}>{lang === "bn" ? "সাপ্তাহিক লক্ষ্যে এগিয়ে যান!" : "Keep moving toward the weekly goal!"}</span>
           </div>
         </div>
 

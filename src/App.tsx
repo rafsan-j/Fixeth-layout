@@ -448,7 +448,7 @@ export default function App() {
   const renderScreen = () => {
     switch (activeNav) {
       case "dashboard":
-        return <DashboardScreen T={T} t={t} lang={lang} onContinue={() => setActiveNav("video")} user={user} evaluation={evaluation} onStartAssessment={() => { setResumingAssessment(true); setScreen("onboarding"); }} />;
+        return <DashboardScreen T={T} t={t} lang={lang} onContinue={() => setActiveNav("video")} user={user} evaluation={evaluation} modules={modules} activeLessonId={activeLessonId} weeklyGoal={preferences.weeklyGoal} onStartAssessment={() => { setResumingAssessment(true); setScreen("onboarding"); }} />;
       case "video":
         return (
           <GuidedVideoScreen
@@ -568,7 +568,7 @@ export default function App() {
       case "analytics":
         return <Analytics T={T} t={t} lang={lang} user={user} evaluation={evaluation} modules={modules} activeLessonId={activeLessonId} weeklyGoal={preferences.weeklyGoal} />;
       default:
-        return <DashboardScreen T={T} t={t} lang={lang} onContinue={() => setActiveNav("video")} user={user} evaluation={evaluation} onStartAssessment={() => { setResumingAssessment(true); setScreen("onboarding"); }} />;
+        return <DashboardScreen T={T} t={t} lang={lang} onContinue={() => setActiveNav("video")} user={user} evaluation={evaluation} modules={modules} activeLessonId={activeLessonId} weeklyGoal={preferences.weeklyGoal} onStartAssessment={() => { setResumingAssessment(true); setScreen("onboarding"); }} />;
     }
   };
 
