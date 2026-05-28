@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowRight, Award, BarChart3, BookOpen, CheckCircle2, Clock3, Flame, Gauge, Lightbulb, Sparkles, Target, TrendingUp } from "lucide-react";
+import { ArrowRight, Award, BarChart3, BookOpen, CheckCircle2, Clock3, Flame, Gauge, Layers3, Lightbulb, ListChecks, Sparkles, Target, TrendingUp } from "lucide-react";
 import { Module, UserEvaluation } from "../types";
 
 interface AnalyticsProps {
@@ -17,6 +17,7 @@ export default function Analytics({ T, t, lang, user, evaluation, modules = [], 
   const totalLessons = modules.reduce((count, module) => count + module.lessons.length, 0);
   const completedLessons = modules.reduce((count, module) => count + module.lessons.filter((lesson) => lesson.done).length, 0);
   const completionPct = totalLessons ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const remainingLessons = Math.max(0, totalLessons - completedLessons);
   const currentModule = modules.find((module) => module.lessons.some((lesson) => lesson.id === activeLessonId)) ?? modules[0];
   const currentModuleCompleted = currentModule ? currentModule.lessons.filter((lesson) => lesson.done).length : 0;
   const currentModuleTotal = currentModule?.lessons.length ?? 0;
@@ -29,6 +30,87 @@ export default function Analytics({ T, t, lang, user, evaluation, modules = [], 
       : undefined;
   const hasAssessment = Boolean(evaluation && !evaluation.skipped);
   const completedAt = evaluation?.completedAt ? new Date(evaluation.completedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : null;
+  const assessmentBand = scorePct === undefined
+    ? null
+    : scorePct >= 80
+      ? (lang === "bn" ? "অ্যাডভান্সড রেডি" : "Advanced ready")
+      : scorePct >= 60
+        ? (lang === "bn" ? "কনসোলিডেশন দরকার" : "Needs consolidation")
+        : (lang === "bn" ? "বেসিক রিইনফোর্সমেন্ট" : "Needs reinforcement");
+
+  const moduleRows = modules.map((module) => {
+    const done = module.lessons.filter((lesson) => lesson.done).length;
+    const total = module.lessons.length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const firstOpen = module.lessons.find((lesson) => !lesson.done);
+    return {
+      id: module.id,
+      title: module.title,
+      done,
+      total,
+      pct,
+      firstOpen: firstOpen?.title ?? (lang === "bn" ? "সব শেষ" : "All complete"),
+      active: currentModule?.id === module.id
+    };
+  });
+
+  const lessonLedger = modules.flatMap((module) =>
+    module.lessons.map((lesson) => ({
+      module: module.title,
+      title: lesson.title,
+      done: lesson.done,
+      active: lesson.id === activeLessonId,
+      duration: lesson.dur
+    }))
+  );
+
+  const assessmentSummary = (() => {
+    if (!hasAssessment) {
+      return {
+        title: lang === "bn" ? "ডায়াগনস্টিক বাকি" : "Diagnostic pending",
+        body: lang === "bn"
+          ? "মূল্যায়ন শেষ না হলে শক্তি-দুর্বলতার নির্ভুল বিশ্লেষণ করা যাবে না।"
+          : "We cannot infer strengths and weaknesses reliably until the diagnostic is completed.",
+        bullets: lang === "bn"
+          ? ["এখন শুধু প্রগতি ও লেসনের ডেটা দেখা যাচ্ছে", "স্কোর না থাকায় কাস্টম ট্র্যাকিং সীমিত", "মূল্যায়ন শেষ করলে গভীর রিপোর্ট খুলবে"]
+          : ["Only progress and lesson data are visible right now", "No score means personalized tracking is limited", "Complete the diagnostic to unlock a deeper report"]
+      };
+    }
+
+    if ((scorePct ?? 0) >= 80) {
+      return {
+        title: lang === "bn" ? "শক্ত কোর স্কিলস" : "Strong core skills",
+        body: lang === "bn"
+          ? "আপনি মৌলিক ধারণা ধরে রেখেছেন এবং এখন বেশি চ্যালেঞ্জিং কাজের জন্য প্রস্তুত।"
+          : "You are retaining the core ideas and are ready for more challenging work.",
+        bullets: lang === "bn"
+          ? ["ধারণা দ্রুত চিনতে পারছেন", "পরবর্তী ধাপের কাজ নেওয়া উচিত", "প্রকল্পভিত্তিক অনুশীলন দ্রুততর হবে"]
+          : ["You identify core concepts quickly", "It is time to take on harder tasks", "Project-based practice will accelerate growth"]
+      };
+    }
+
+    if ((scorePct ?? 0) >= 60) {
+      return {
+        title: lang === "bn" ? "মাঝারি স্থিতি" : "Mid-range stability",
+        body: lang === "bn"
+          ? "বেসিক বোঝা আছে, কিন্তু কিছু ধারণা আরও শক্ত করতে হবে।"
+          : "You understand the basics, but a few concepts need to be hardened.",
+        bullets: lang === "bn"
+          ? ["দুটি দুর্বল বিষয় চিহ্নিত করুন", "রিভিউ + প্র্যাকটিস মিলিয়ে কাজ করুন", "পরবর্তী রিটেকের আগে ছোট সেশন রাখুন"]
+          : ["Identify two weak topics", "Mix review with practice", "Keep sessions short before a retake"]
+      };
+    }
+
+    return {
+      title: lang === "bn" ? "ভিত্তি পুনর্গঠন দরকার" : "Base rebuilding needed",
+      body: lang === "bn"
+        ? "ফলাফল বলছে যে এখনই বেসিক লেসনে ফিরে যাওয়াই সেরা পথ।"
+        : "The result suggests it is best to return to the basic lessons right now.",
+      bullets: lang === "bn"
+        ? ["প্রথম ২-৩ লেসন আবার করুন", "নোটবুকে নিয়ম ও উদাহরণ লিখুন", "কুইজে অল্প সময়ে পুনরায় যাচাই করুন"]
+        : ["Redo the first 2-3 lessons", "Write rules and examples in the notebook", "Use short quizzes to re-check quickly"]
+    };
+  })();
 
   const learningPulse = [
     {
@@ -119,6 +201,27 @@ export default function Analytics({ T, t, lang, user, evaluation, modules = [], 
     </div>
   );
 
+  const TinyStat = ({ label, value, hint }: { label: string; value: string; hint: string }) => (
+    <div style={{ padding: 12, borderRadius: 12, background: T.bg2, border: `1px solid ${T.border}` }}>
+      <div style={{ fontSize: 11, color: T.txt2, fontWeight: 800, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 18, color: T.txt0, fontWeight: 950 }}>{value}</div>
+      <div style={{ fontSize: 11, lineHeight: 1.45, color: T.txt1, marginTop: 4 }}>{hint}</div>
+    </div>
+  );
+
+  const RowCard = ({ title, left, right, active, pct }: { title: string; left: string; right: string; active?: boolean; pct: number }) => (
+    <div style={{ padding: 14, borderRadius: 14, background: active ? T.accentDim : T.bg2, border: `1px solid ${active ? T.accent : T.border}` }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginBottom: 8, alignItems: "center" }}>
+        <div style={{ fontSize: 13.5, fontWeight: 900, color: T.txt0, lineHeight: 1.4 }}>{title}</div>
+        <div style={{ fontSize: 12, fontWeight: 900, color: active ? T.accent : T.txt1 }}>{pct}%</div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 11.5, lineHeight: 1.45, color: T.txt1 }}>
+        <span>{left}</span>
+        <span style={{ textAlign: "right" }}>{right}</span>
+      </div>
+    </div>
+  );
+
   const SectionCard = ({ title, icon: Icon, children }: { title: string; icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>; children: React.ReactNode }) => (
     <div style={{ background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 18, padding: 18, boxShadow: T.shadow }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
@@ -189,6 +292,13 @@ export default function Analytics({ T, t, lang, user, evaluation, modules = [], 
           ))}
         </div>
 
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12, marginBottom: 16 }}>
+          <TinyStat label={lang === "bn" ? "সম্পন্ন বনাম বাকি" : "Completed vs remaining"} value={`${completedLessons}/${remainingLessons}`} hint={lang === "bn" ? "লেসন-স্তরের অগ্রগতি" : "Lesson-level balance"} />
+          <TinyStat label={lang === "bn" ? "বর্তমান ট্র্যাক" : "Current track"} value={currentModule?.title?.split(" ")[0] ?? "--"} hint={lang === "bn" ? "সক্রিয় অধ্যায়টি ট্র্যাক করুন" : "Track the active chapter"} />
+          <TinyStat label={lang === "bn" ? "আসন্ন পাঠ" : "Next lesson"} value={nextLesson?.title?.slice(0, 18) ?? (lang === "bn" ? "নেই" : "None")} hint={lang === "bn" ? "এরপর কী খুলবে" : "What unlocks next"} />
+          <TinyStat label={lang === "bn" ? "মূল্যায়ন স্তর" : "Assessment band"} value={assessmentBand ?? (lang === "bn" ? "অপেক্ষমাণ" : "Pending")} hint={lang === "bn" ? "স্কোর-ভিত্তিক ব্যাখ্যা" : "Score-based interpretation"} />
+        </div>
+
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 16, marginBottom: 16 }}>
           <SectionCard title={lang === "bn" ? "বর্তমান অধ্যায়ের অবস্থা" : "Current chapter status"} icon={Target}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
@@ -251,6 +361,81 @@ export default function Analytics({ T, t, lang, user, evaluation, modules = [], 
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          <SectionCard title={lang === "bn" ? "মডিউল রিপোর্ট" : "Module report"} icon={Layers3}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {moduleRows.map((module) => (
+                <div key={module.id}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginBottom: 8 }}>
+                    <div>
+                      <div style={{ fontSize: 13.5, fontWeight: 900, color: T.txt0 }}>{module.title}</div>
+                      <div style={{ fontSize: 11.5, color: T.txt1, marginTop: 3 }}>
+                        {lang === "bn" ? `${module.done} / ${module.total} সম্পন্ন` : `${module.done} / ${module.total} done`}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 13, fontWeight: 900, color: module.active ? T.accent : T.txt0 }}>{module.pct}%</div>
+                      <div style={{ fontSize: 11, color: T.txt2, marginTop: 3 }}>{module.active ? (lang === "bn" ? "সক্রিয়" : "Active") : (lang === "bn" ? "নিষ্ক্রিয়" : "Inactive")}</div>
+                    </div>
+                  </div>
+                  <ProgressBar pct={module.pct} color={module.active ? T.accent : (T.blue || "#4A9EFF")} />
+                  <div style={{ marginTop: 8, fontSize: 11.5, color: T.txt1, lineHeight: 1.5 }}>
+                    {lang === "bn" ? `পরবর্তী খোলা পাঠ: ${module.firstOpen}` : `Next open lesson: ${module.firstOpen}`}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title={lang === "bn" ? "দক্ষতা এবং ঝুঁকি" : "Skills and risk"} icon={Lightbulb}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ padding: 12, borderRadius: 12, background: T.bg2, border: `1px solid ${T.border}` }}>
+                <div style={{ fontSize: 11, color: T.txt2, fontWeight: 800, marginBottom: 4 }}>{lang === "bn" ? "শক্তিশালী দিক" : "Strength signal"}</div>
+                <div style={{ fontSize: 13.5, color: T.txt0, lineHeight: 1.55, fontWeight: 700 }}>
+                  {hasAssessment
+                    ? (scorePct && scorePct >= 80 ? (lang === "bn" ? "আপনি ধারণা দ্রুত ধরতে পারছেন এবং উন্নত টাস্কে যেতে পারেন।" : "You are picking up concepts quickly and can move to advanced tasks.") : (lang === "bn" ? "ভিত্তি আছে, তবে আরও পুনরাবৃত্তি দরকার।" : "The foundation is there, but more repetition is needed."))
+                    : (lang === "bn" ? "সম্পূর্ণ প্রগতি ডেটা না থাকায় এখন লেসন ট্র্যাকিংটাই শক্তিশালী সিগন্যাল।" : "Without assessment data, lesson tracking is the strongest signal we have.")}
+                </div>
+              </div>
+              <div style={{ padding: 12, borderRadius: 12, background: T.bg2, border: `1px solid ${T.border}` }}>
+                <div style={{ fontSize: 11, color: T.txt2, fontWeight: 800, marginBottom: 4 }}>{lang === "bn" ? "ঝুঁকি সিগন্যাল" : "Risk signal"}</div>
+                <div style={{ fontSize: 13.5, color: T.txt0, lineHeight: 1.55, fontWeight: 700 }}>
+                  {remainingLessons > 0
+                    ? (lang === "bn" ? "অসম্পূর্ণ পাঠগুলো জমা হতে থাকলে রিভিশন উইন্ডো ছোট হবে।" : "If unfinished lessons stack up, your revision window gets smaller.")
+                    : (lang === "bn" ? "সব পাঠ শেষ—এখন গভীর অনুশীলনের পালা।" : "All lessons are done, so the next step is deeper practice.")}
+                </div>
+              </div>
+              <div style={{ padding: 12, borderRadius: 12, background: T.bg2, border: `1px solid ${T.border}` }}>
+                <div style={{ fontSize: 11, color: T.txt2, fontWeight: 800, marginBottom: 4 }}>{lang === "bn" ? "ফোকাস সময়" : "Focus time"}</div>
+                <div style={{ fontSize: 13.5, color: T.txt0, lineHeight: 1.55, fontWeight: 700 }}>
+                  {lang === "bn"
+                    ? `সপ্তাহের লক্ষ্য ${weeklyGoal} ক্লাস; অগ্রগতির রেশিও ${Math.min(completedLessons, weeklyGoal)}/${weeklyGoal}।`
+                    : `Your weekly goal is ${weeklyGoal} classes; you are at ${Math.min(completedLessons, weeklyGoal)}/${weeklyGoal}.`}
+                </div>
+              </div>
+            </div>
+          </SectionCard>
+        </div>
+
+        <SectionCard title={lang === "bn" ? "লেসন লেজার" : "Lesson ledger"} icon={ListChecks}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+            {lessonLedger.map((lesson, index) => (
+              <div key={`${lesson.module}-${index}`} style={{ padding: 12, borderRadius: 12, background: T.bg2, border: `1px solid ${lesson.active ? T.accent : T.border}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginBottom: 8 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 900, color: T.txt0, lineHeight: 1.45 }}>{lesson.title}</div>
+                  <div style={{ fontSize: 11, color: lesson.done ? T.accent : T.txt2, fontWeight: 800 }}>
+                    {lesson.done ? (lang === "bn" ? "সম্পন্ন" : "Done") : (lang === "bn" ? "বাকি" : "Open")}
+                  </div>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 11.5, color: T.txt1, lineHeight: 1.4 }}>
+                  <span>{lesson.module}</span>
+                  <span>{lesson.duration}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
           <SectionCard title={lang === "bn" ? "আপনার জন্য ঠিক এখন কী করা উচিত" : "What to do next"} icon={Sparkles}>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {recommendations.map((item, index) => (
@@ -285,6 +470,28 @@ export default function Analytics({ T, t, lang, user, evaluation, modules = [], 
             </div>
           </SectionCard>
         </div>
+
+        <SectionCard title={assessmentSummary.title} icon={ArrowRight}>
+          <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 14, alignItems: "start" }}>
+            <div>
+              <div style={{ fontSize: 13.5, color: T.txt0, lineHeight: 1.7, fontWeight: 700, marginBottom: 10 }}>{assessmentSummary.body}</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {assessmentSummary.bullets.map((bullet, index) => (
+                  <div key={index} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 12.5, lineHeight: 1.6, color: T.txt1 }}>
+                    <div style={{ width: 18, height: 18, borderRadius: 999, background: `${T.accent}18`, color: T.accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 900, flexShrink: 0 }}>
+                      {index + 1}
+                    </div>
+                    <span>{bullet}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
+              <TinyStat label={lang === "bn" ? "ব্যাখ্যার ধরন" : "Interpretation"} value={assessmentBand ?? (lang === "bn" ? "অপেক্ষমাণ" : "Pending")} hint={lang === "bn" ? "স্কোর থেকে অর্থ বের করে" : "What the score means"} />
+              <TinyStat label={lang === "bn" ? "শেষ অ্যাসেসমেন্ট" : "Last assessment"} value={completedAt ?? (lang === "bn" ? "নেই" : "None")} hint={lang === "bn" ? "সর্বশেষ আপডেটের তারিখ" : "Latest update date"} />
+            </div>
+          </div>
+        </SectionCard>
 
         <div style={{ background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 18, padding: 18, boxShadow: T.shadow }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
