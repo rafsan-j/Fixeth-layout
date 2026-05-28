@@ -566,7 +566,7 @@ export default function App() {
           />
         );
       case "analytics":
-        return <Analytics T={T} t={t} lang={lang} user={user} />;
+        return <Analytics T={T} t={t} lang={lang} user={user} evaluation={evaluation} modules={modules} activeLessonId={activeLessonId} weeklyGoal={preferences.weeklyGoal} />;
       default:
         return <DashboardScreen T={T} t={t} lang={lang} onContinue={() => setActiveNav("video")} user={user} evaluation={evaluation} onStartAssessment={() => { setResumingAssessment(true); setScreen("onboarding"); }} />;
     }
