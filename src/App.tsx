@@ -368,7 +368,7 @@ export default function App() {
     { id: "submissions", label: t.submissions, icon: Upload },
     { id: "codespace", label: t.codeSpace, icon: Code2 },
     { id: "tools", label: t.tools, icon: Wrench },
-    { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "analytics", label: t.analytics, icon: BarChart3 },
     ...(preferences.contentVisibility.showMentor ? [{ id: "mentor", label: t.aiMentor, icon: Bot }] : []),
     ...(preferences.contentVisibility.showCommunity ? [{ id: "community", label: t.community, icon: UsersRound }] : []),
     ...(preferences.contentVisibility.showCertificates ? [{ id: "certs", label: t.certs, icon: Award }] : [])

@@ -66,6 +66,7 @@ export const i18n: { [key: string]: any } = {
     brand: "Fixeth",
     tagline: "Learn. Prove. Build.",
     dashboard: "Dashboard",
+    analytics: "Analytics",
     guidedVideo: "Guided Video",
     notebook: "Notebook",
     quizAssign: "Quiz & Homework",
@@ -129,8 +130,7 @@ export const i18n: { [key: string]: any } = {
   bn: {
     brand: "ফিক্সেথ",
     tagline: "শিখুন। প্রমাণ করুন। গড়ুন।",
-    dashboard: "ড্যাশবোর্ড",
-    community: "কমিউনিটি এআই",
+    dashboard: "ড্যাশবোর্ড",    analytics: "বিশ্লেষণ",    community: "কমিউনিটি এআই",
     certs: "সার্টিফিকেট",
     guidedVideo: "গাইডেড ভিডিও ক্লাস",
     notebook: "নোটবুক ল্যাব",
@@ -275,7 +275,7 @@ export const assessments: { [trackId: string]: AssessmentQuestion[] } = {
   ds: [
     {
       qEn: "Which Python package provides highly optimized multi-dimensional vector array object interfaces?",
-      qBn: "পাইথনে মাল্টি-ডাইমেনশনাল ভেক্টর অ্যারে অবজেক্ট অপারেশনের জন্য মূলত কোন লাইব্রেরি ব্যবহার করা হয়?",
+      qBn: "পাইথনে মাল্টি-ডাইমেনশনাল ভেক্টর অ্যারে অবজেক্ট অপারেশনের জন্য মূলত কোন লাইব্রেরি ব্যবহার করা হয়?",
       optsEn: ["Pandas", "NumPy", "Scikit-Learn", "Matplotlib"],
       optsBn: ["প্যান্ডাস (Pandas)", "নামপাই (NumPy)", "সাইকিট-লার্ন (Scikit-Learn)", "ম্যাটপ্লটলিব"],
       ans: 1
@@ -290,15 +290,85 @@ export const assessments: { [trackId: string]: AssessmentQuestion[] } = {
         "Initiating training code completely void of initial source data arrays"
       ],
       optsBn: [
-        "যেকোনো লেবেলবিহীন ইনপুট প্যারামিটার নিয়ে কাজ করা",
+        "যেকোনো লেবেলবিহীন ইনপুট প্যারামিটার নিয়ে কাজ করা",
         "লেবেলযুক্ত চিহ্নিত ডাটা ব্যবহার করে প্রেডিকশন মডেল ট্রেইন করা",
         "ক্রমাগত র‍্যান্ডম স্কোর বৃদ্ধির মাধ্যমে গেম ক্যারেক্টার ইভলভ করা",
-        "কোনো রকম ইনপুট ডাটা অ্যারে ছাড়াই প্রোগ্রাম চালানো"
+        "কোনো রকম ইনপুট ডাটা অ্যারে ছাড়াই প্রোগ্রাম চালানো"
       ],
+      ans: 1
+    },
+    {
+      qEn: "Which SQL operation merges information from two tables using shared key attributes?",
+      qBn: "দুটি টেবিলের তথ্য একটি শেয়ার করা কী অনুযায়ী একসাথে যুক্ত করার জন্য কোন SQL অপারেশন ব্যবহার করা হয়?",
+      optsEn: ["UNION", "JOIN", "MERGE", "CONCAT"],
+      optsBn: ["ইউনিয়ন (UNION)", "জয়েন (JOIN)", "মার্জ (MERGE)", "কনকেট (CONCAT)"],
+      ans: 1
+    },
+    {
+      qEn: "What does 'feature engineering' accomplish in predictive modeling workflows?",
+      qBn: "প্রেডিক্টিভ মডেলিং-এ 'feature engineering' কী অর্জন করে?",
+      optsEn: ["Automatically generates model architecture", "Creates and selects meaningful variables to improve model performance", "Encrypts data for security", "Reduces the size of datasets"],
+      optsBn: ["স্বয়ংক্রিয়ভাবে মডেল আর্কিটেকচার তৈরি করে", "মডেল পারফরম্যান্স উন্নত করার জন্য অর্থপূর্ণ ভেরিয়েবল তৈরি এবং নির্বাচন করে", "নিরাপত্তার জন্য ডাটা এনক্রিপ্ট করে", "ডাটাসেটের আকার হ্রাস করে"],
+      ans: 1
+    },
+    {
+      qEn: "How is 'data normalization' used in statistical analysis?",
+      qBn: "পরিসংখ্যান বিশ্লেষণে 'data normalization' কীভাবে ব্যবহার করা হয়?",
+      optsEn: ["Deletes all data from the database", "Scales variables to a standard range for fair comparison", "Creates backup copies of data", "Encrypts sensitive information"],
+      optsBn: ["ডাটাবেস থেকে সব ডাটা মুছে ফেলে", "ন্যায্য তুলনার জন্য ভেরিয়েবলকে একটি মান পরিসরে স্কেল করে", "ডাটার ব্যাকআপ কপি তৈরি করে", "সংবেদনশীল তথ্য এনক্রিপ্ট করে"],
+      ans: 1
+    },
+    {
+      qEn: "What metric is used to evaluate classification model performance?",
+      qBn: "শ্রেণীবিভাগ মডেলের পারফরম্যান্স মূল্যায়নে কোন মেট্রিক ব্যবহার করা হয়?",
+      optsEn: ["Server response time", "Accuracy, precision, recall, and F1-score", "Database storage size", "Network bandwidth"],
+      optsBn: ["সার্ভার রেসপন্স টাইম", "অ্যাকুরেসি, প্রিসিশন, রিকল এবং F1-স্কোর", "ডাটাবেস স্টোরেজ সাইজ", "নেটওয়ার্ক ব্যান্ডউইথ"],
+      ans: 1
+    },
+    {
+      qEn: "Which visualization library is best for creating interactive data plots in Python?",
+      qBn: "পাইথনে ইন্টারেক্টিভ ডাটা প্লট তৈরির জন্য কোন ভিজুয়ালাইজেশন লাইব্রেরি সবচেয়ে ভালো?",
+      optsEn: ["Matplotlib only", "Plotly for interactive visualizations", "NumPy for plotting", "Pandas built-in charts"],
+      optsBn: ["শুধুমাত্র Matplotlib", "ইন্টারেক্টিভ ভিজুয়ালাইজেশনের জন্য Plotly", "প্লটিংয়ের জন্য NumPy", "Pandas বিল্ট-ইন চার্ট"],
+      ans: 1
+    },
+    {
+      qEn: "What is 'cross-validation' used for in machine learning?",
+      qBn: "মেশিন লার্নিংয়ে 'cross-validation' কীসের জন্য ব্যবহার করা হয়?",
+      optsEn: ["To encrypt model parameters", "To validate model performance on different data subsets", "To increase the size of training data", "To remove outliers from the dataset"],
+      optsBn: ["মডেল প্যারামিটার এনক্রিপ্ট করতে", "বিভিন্ন ডাটা সাবসেটে মডেল পারফরম্যান্স যাচাই করতে", "ট্রেনিং ডাটার আকার বাড়াতে", "ডাটাসেট থেকে আউটলায়ার অপসারণ করতে"],
+      ans: 1
+    },
+    {
+      qEn: "In exploratory data analysis, what type of visualization shows variable distribution?",
+      qBn: "অন্বেষণমূলক ডাটা বিশ্লেষণে ভেরিয়েবল বিতরণ দেখানোর জন্য কোন ধরনের ভিজুয়ালাইজেশন ব্যবহার করা হয়?",
+      optsEn: ["Line chart", "Histogram and box plot", "Pie chart", "Scatter plot only"],
+      optsBn: ["লাইন চার্ট", "হিস্টোগ্রাম এবং বক্স প্লট", "পাই চার্ট", "শুধুমাত্র স্ক্যাটার প্লট"],
+      ans: 1
+    },
+    {
+      qEn: "What is the primary purpose of data preprocessing in machine learning?",
+      qBn: "মেশিন লার্নিংয়ে ডাটা প্রিপ্রসেসিংয়ের প্রধান উদ্দেশ্য কী?",
+      optsEn: ["To make data look prettier", "To clean, transform, and prepare data for model training", "To reduce the number of features randomly", "To replace all missing values with zeros"],
+      optsBn: ["ডাটাকে সুন্দর দেখাতে", "মডেল ট্রেনিংয়ের জন্য ডাটা পরিষ্কার, রূপান্তর এবং প্রস্তুত করতে", "বৈশিষ্ট্যের সংখ্যা এলোমেলোভাবে হ্রাস করতে", "সব অনুপস্থিত মূল্য শূন্য দিয়ে প্রতিস্থাপন করতে"],
       ans: 1
     }
   ],
   fe: [
+    {
+      qEn: "Which React Hook is standardized for conducting side effects like network queries?",
+      qBn: "ফাংশনাল রিয়্যাক্ট কম্পোনেন্টে নেটওয়ার্ক রিকোয়েস্ট বা সাইড ইফেক্টস সম্পন্ন করার জন্য কোন হুক নির্ধারিত?",
+      optsEn: ["useState", "useMemo", "useEffect", "useRef"],
+      optsBn: ["useState", "useMemo", "useEffect", "useRef"],
+      ans: 2
+    },
+    {
+      qEn: "What is the primary utility of semantic HTML syntax elements on modern web browsers?",
+      qBn: "আধুনিক ওয়েব ব্রাউজারে সেমান্টিক এইচটিএমএল (Semantic HTML) লেখার মূল উদ্দেশ্য কী?",
+      optsEn: ["Compressing loading times of browser assets", "Embedding client-side relational SQL databases", "Expressing clear structural purposes of containers (<article>, <section>) to client software and crawlers", "Encrypting form data during submission"],
+      optsBn: ["ব্রাউজার সামগ্রীর লোডিং সময় সংক্ষিপ্ত করা", "ক্লায়েন্ট-সাইডে রিলেশনাল এসকিউএল ডাটাবেজ যুক্ত করা", "পেজের মূল কাঠামোগুলোকে (<article>, <section>) সার্চ ইঞ্জিন ও ব্রাউজারের কাছে অর্থপূর্ণ করা", "ফর্ম সাবমিশনের সময় ডাটা পাসওয়ার্ড সিঙ্ক্রোনাইজ করা"],
+      ans: 2
+    },
     {
       qEn: "Which CSS layout model allows flexible arrangement of items in rows or columns?",
       qBn: "কোন CSS লেআউট মডেল আইটেমগুলোকে সারি বা কলামে নমনীয় ব্যবস্থা করার সুবিধা দেয়?",
@@ -358,6 +428,20 @@ export const assessments: { [trackId: string]: AssessmentQuestion[] } = {
   ],
   be: [
     {
+      qEn: "Which HTTP request verb represents making a structured new item entry inside a server data repository?",
+      qBn: "একটি ব্যাকএন্ড সার্ভারে নতুন তথ্য জমা দিতে মূলত কোন HTTP মেথড ব্যবহার করা হয়?",
+      optsEn: ["GET", "POST", "PUT", "DELETE"],
+      optsBn: ["GET (গেট)", "POST (পোস্ট)", "PUT (পুট)", "DELETE (ডিলিট)"],
+      ans: 1
+    },
+    {
+      qEn: "In relational schema systems, which constraint manages referential link consistency across tables?",
+      qBn: "রিলেশনাল ডাটাবেজে দুটি টেবিলের তথ্যের মধ্যে যোগসূত্র স্থাপন ও স্থায়িত্ব রক্ষা করার পদ্ধতিকে কী বলা হয়?",
+      optsEn: ["Primary Unique Index", "Foreign Key reference linkage", "Local SHA-256 Checksum", "Memory Page table indexing"],
+      optsBn: ["প্রাইমারি ইউনিক ইনডেক্স", "ফরেন কি (Foreign Key) রেফারেন্স লিংকেজ", "লোকাল SHA-256 চেকসাম", "মেমোরি পেজ টেবিল ইনডেক্সিং"],
+      ans: 1
+    },
+    {
       qEn: "How does 'load balancing' work in distributed server architectures?",
       qBn: "বিতরণকৃত সার্ভার আর্কিটেকচারে লোড ব্যালান্সিং কীভাবে কাজ করে?",
       optsEn: ["Directing network traffic evenly across multiple servers to prevent overload", "Storing all data on a single server for simplicity", "Removing servers from the network when they get busy", "Using only one server to handle all requests"],
@@ -415,6 +499,20 @@ export const assessments: { [trackId: string]: AssessmentQuestion[] } = {
     }
   ],
   dl: [
+    {
+      qEn: "Which of these passwords conforms to modern, hardened security parameter directives against brute forcing?",
+      qBn: "এই পাসওয়ার্ডগুলির মধ্যে কোনটি ব্রুট ফোর্স অ্যাটাকের বিরুদ্ধে আধুনিক নিরাপত্তা নির্দেশনা অনুসরণ করে?",
+      optsEn: ["admin", "password123", "P@ssw0rd!2024#Sec", "12345678"],
+      optsBn: ["admin", "password123", "P@ssw0rd!2024#Sec", "12345678"],
+      ans: 2
+    },
+    {
+      qEn: "How should you handle a suspicious email claiming to be from your bank requesting account details?",
+      qBn: "আপনার ব্যাংকের পক্ষ থেকে অ্যাকাউন্ট বিবরণ চাইছে এমন সন্দেহজনক ইমেল সম্পর্কে আপনি কী করবেন?",
+      optsEn: ["Reply with your account information immediately", "Click on links to verify your account status", "Do not respond; contact your bank directly through official channels", "Forward the email to other users"],
+      optsBn: ["অবিলম্বে আপনার অ্যাকাউন্ট তথ্য দিয়ে উত্তর দিন", "আপনার অ্যাকাউন্ট স্ট্যাটাস যাচাই করতে লিংকে ক্লিক করুন", "উত্তর দিবেন না; সরাসরি অফিসিয়াল চ্যানেলের মাধ্যমে আপনার ব্যাংকের সাথে যোগাযোগ করুন", "অন্যান্য ব্যবহারকারীদের কাছে ইমেল ফরওয়ার্ড করুন"],
+      ans: 2
+    },
     {
       qEn: "What is a 'phishing' attack?",
       qBn: "'phishing' অ্যাটাক কী?",
