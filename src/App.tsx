@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import type { ComponentType } from "react";
 import { themes, i18n } from "./data";
-import { Module, ChatMessage } from "./types";
+import { Module, ChatMessage, UserEvaluation } from "./types";
 import {
   Award,
   Bot,
@@ -12,11 +12,15 @@ import {
   ClipboardList,
   Upload,
   UsersRound,
-  Wrench
+  Wrench,
+  BarChart3
 } from "lucide-react";
 
 // Import Modularized Panels & Workspaces
 import Onboarding from "./components/Onboarding";
+import LoginRegister from "./components/LoginRegister";
+import EvaluationResults from "./components/EvaluationResults";
+import Analytics from "./components/Analytics";
 import DashboardScreen from "./components/Dashboard";
 import GuidedVideoScreen from "./components/GuidedVideo";
 import NotebookScreen from "./components/Notebook";
@@ -176,7 +180,8 @@ const CORE_MODULES: Module[] = [
 export default function App() {
   const [isDark, setIsDark] = useState(true);
   const [lang, setLang] = useState("en");
-  const [screen, setScreen] = useState("onboarding");
+  const [screen, setScreen] = useState<"auth" | "onboarding" | "app">("auth");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeNav, setActiveNav] = useState("dashboard");
 
   // Lessons active indexes
@@ -195,9 +200,13 @@ export default function App() {
   // Global user/profile state
   const [user, setUser] = useState<UserProfile>(DEFAULT_USER);
   const [preferences, setPreferences] = useState<UserPreferences>(DEFAULT_PREFERENCES);
+  const [evaluation, setEvaluation] = useState<UserEvaluation | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileTab, setProfileTab] = useState<"profile" | "account" | "preferences">("profile");
   const [profileReturnNav, setProfileReturnNav] = useState("dashboard");
+  const [showingEvalResults, setShowingEvalResults] = useState(false);
+  const [lastEvaluationTrack, setLastEvaluationTrack] = useState<string>("");
+  const [resumingAssessment, setResumingAssessment] = useState(false);
 
   const activeModule = modules.find((mod) => mod.lessons.some((lesson) => lesson.id === activeLessonId)) ?? modules[0];
   const activeLesson = activeModule?.lessons.find((lesson) => lesson.id === activeLessonId) ?? activeModule?.lessons[0];
@@ -219,17 +228,30 @@ export default function App() {
   };
   const density = densityConfig[preferences.layoutDensity];
 
-  // Load persisted user customization
+  // Load persisted user customization and auth state
   useEffect(() => {
     try {
       const rawUser = localStorage.getItem("fixeth.userProfile");
       const rawPrefs = localStorage.getItem("fixeth.userPreferences");
       const rawLang = localStorage.getItem("fixeth.lang");
       const rawTheme = localStorage.getItem("fixeth.isDark");
+      const rawAuth = localStorage.getItem("fixeth.isAuthenticated");
+      const rawScreen = localStorage.getItem("fixeth.screen");
+      const rawEval = localStorage.getItem("fixeth.evaluation");
+      
       if (rawUser) setUser({ ...DEFAULT_USER, ...JSON.parse(rawUser) });
       if (rawPrefs) setPreferences(normalizePreferences(JSON.parse(rawPrefs)));
       if (rawLang === "en" || rawLang === "bn") setLang(rawLang);
       if (rawTheme === "true" || rawTheme === "false") setIsDark(rawTheme === "true");
+      if (rawAuth === "true") setIsAuthenticated(true);
+      if (rawEval) setEvaluation(JSON.parse(rawEval));
+      
+      // Restore screen state if authenticated
+      if (rawAuth === "true" && (rawScreen === "onboarding" || rawScreen === "app")) {
+        setScreen(rawScreen as "onboarding" | "app");
+      } else if (rawAuth === "true") {
+        setScreen("onboarding");
+      }
     } catch {
       // Ignore bad local storage payloads and keep defaults.
     }
@@ -250,6 +272,20 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("fixeth.isDark", String(isDark));
   }, [isDark]);
+
+  useEffect(() => {
+    localStorage.setItem("fixeth.isAuthenticated", String(isAuthenticated));
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    localStorage.setItem("fixeth.screen", screen);
+  }, [screen]);
+
+  useEffect(() => {
+    if (evaluation) {
+      localStorage.setItem("fixeth.evaluation", JSON.stringify(evaluation));
+    }
+  }, [evaluation]);
 
   // Sync active lesson highlight in list elements
   useEffect(() => {
@@ -332,6 +368,7 @@ export default function App() {
     { id: "submissions", label: t.submissions, icon: Upload },
     { id: "codespace", label: t.codeSpace, icon: Code2 },
     { id: "tools", label: t.tools, icon: Wrench },
+    { id: "analytics", label: "Analytics", icon: BarChart3 },
     ...(preferences.contentVisibility.showMentor ? [{ id: "mentor", label: t.aiMentor, icon: Bot }] : []),
     ...(preferences.contentVisibility.showCommunity ? [{ id: "community", label: t.community, icon: UsersRound }] : []),
     ...(preferences.contentVisibility.showCertificates ? [{ id: "certs", label: t.certs, icon: Award }] : [])
@@ -348,7 +385,7 @@ export default function App() {
   const renderScreen = () => {
     switch (activeNav) {
       case "dashboard":
-        return <DashboardScreen T={T} t={t} lang={lang} onContinue={() => setActiveNav("video")} user={user} />;
+        return <DashboardScreen T={T} t={t} lang={lang} onContinue={() => setActiveNav("video")} user={user} evaluation={evaluation} onStartAssessment={() => { setResumingAssessment(true); setScreen("onboarding"); }} />;
       case "video":
         return (
           <GuidedVideoScreen
@@ -465,8 +502,10 @@ export default function App() {
             onToggleTheme={() => setIsDark((prev) => !prev)}
           />
         );
+      case "analytics":
+        return <Analytics T={T} t={t} lang={lang} user={user} />;
       default:
-        return <DashboardScreen T={T} t={t} lang={lang} onContinue={() => setActiveNav("video")} user={user} />;
+        return <DashboardScreen T={T} t={t} lang={lang} onContinue={() => setActiveNav("video")} user={user} evaluation={evaluation} onStartAssessment={() => { setResumingAssessment(true); setScreen("onboarding"); }} />;
     }
   };
 
@@ -474,21 +513,77 @@ export default function App() {
   const showAiSidebar = preferences.contentVisibility.showMentor && ["video", "notebook", "quiz"].includes(activeNav);
 
   // Keep this conditional return after all hooks to preserve hook order across renders.
+  // Auth screen
+  if (!isAuthenticated) {
+    return (
+      <LoginRegister
+        T={T}
+        t={t}
+        onSuccess={(email, name) => {
+          setUser({ ...user, email, name });
+          setIsAuthenticated(true);
+          setScreen("onboarding");
+        }}
+      />
+    );
+  }
+
+  // Onboarding screen
   if (screen === "onboarding") {
     return (
       <Onboarding
         T={T}
         parentT={t}
         isDark={isDark}
+        initialStep={resumingAssessment ? 4 : 0}
         onComplete={(data) => {
           if (data.lang) setLang(data.lang);
+          
+          // Store evaluation result
+          if (data.evaluation) {
+            setEvaluation(data.evaluation);
+            setLastEvaluationTrack(data.track);
+            
+            // If not skipped, show results screen
+            if (!data.evaluation.skipped && data.evaluation.score !== undefined) {
+              setShowingEvalResults(true);
+              setScreen("app");
+              setActiveNav("dashboard");
+              setResumingAssessment(false);
+              return;
+            }
+          }
+          
+          // Set recommended lesson based on assessment score
           if (typeof data.assessmentScore === "number") {
             const recommendedLessonId = data.assessmentScore >= 2 ? 5 : data.assessmentScore === 1 ? 3 : 1;
             setActiveLessonId(recommendedLessonId);
             setOpenMods({ 1: true, 2: recommendedLessonId >= 5 });
           }
+          
           setScreen("app");
           setActiveNav("dashboard");
+          setResumingAssessment(false);
+        }}
+      />
+    );
+  }
+
+  // Show evaluation results if just completed assessment
+  if (showingEvalResults && evaluation && !evaluation.skipped && evaluation.score !== undefined) {
+    return (
+      <EvaluationResults
+        T={T}
+        t={t}
+        score={evaluation.score}
+        totalQuestions={10}
+        trackName={lastEvaluationTrack || "Selected Track"}
+        onContinue={() => {
+          setShowingEvalResults(false);
+          // Set recommended lesson
+          const recommendedLessonId = evaluation.score >= 7 ? 5 : evaluation.score >= 5 ? 3 : 1;
+          setActiveLessonId(recommendedLessonId);
+          setOpenMods({ 1: true, 2: recommendedLessonId >= 5 });
         }}
       />
     );
@@ -686,10 +781,12 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => {
-                    // simple sign out implementation
+                    // Sign out: clear auth state and return to login
                     setUser({ name: "Guest", email: "", title: "", location: "", bio: "" });
                     setProfileOpen(false);
-                    setScreen("onboarding");
+                    setIsAuthenticated(false);
+                    setScreen("auth");
+                    localStorage.removeItem("fixeth.isAuthenticated");
                   }}
                   style={{ display: "block", width: "100%", padding: "8px", background: "none", border: "none", textAlign: "left", color: T.red, cursor: "pointer", fontWeight: 800 }}
                 >

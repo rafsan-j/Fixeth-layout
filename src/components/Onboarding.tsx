@@ -1,19 +1,21 @@
 import React, { useState } from "react";
 import { themes, i18n, tracks, assessments, fallbackAssessment } from "../data";
-import { Track, AssessmentQuestion } from "../types";
+import { Track, AssessmentQuestion, UserEvaluation } from "../types";
 
 export default function Onboarding({
   T,
   parentT,
   onComplete,
-  isDark
+  isDark,
+  initialStep = 0
 }: {
   T: any;
   parentT: any;
-  onComplete: (data: { lang: string; track: string; goal: string; level: string; assessmentScore?: number; skippedAssessment?: boolean }) => void;
+  onComplete: (data: { lang: string; track: string; goal: string; level: string; assessmentScore?: number; evaluation?: UserEvaluation }) => void;
   isDark: boolean;
+  initialStep?: number;
 }) {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initialStep);
   const [data, setData] = useState({ goal: "", level: "", track: "ds", lang: "en" });
   const [quizAns, setQuizAns] = useState<{ [key: number]: number }>({});
 
@@ -372,7 +374,20 @@ export default function Onboarding({
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <button
-          onClick={() => onComplete({ ...data, assessmentScore })}
+          onClick={() => {
+            const totalQuestions = activeQuestions.length;
+            const percentage = Math.round((assessmentScore / totalQuestions) * 100);
+            onComplete({
+              ...data,
+              assessmentScore,
+              evaluation: {
+                skipped: false,
+                score: assessmentScore,
+                percentage,
+                completedAt: new Date().toISOString()
+              }
+            });
+          }}
           style={{
             background: T.accent,
             border: "none",
@@ -387,7 +402,15 @@ export default function Onboarding({
           {t.startAssessment}
         </button>
         <button
-          onClick={() => onComplete({ ...data, skippedAssessment: true })}
+          onClick={() => {
+            onComplete({
+              ...data,
+              evaluation: {
+                skipped: true,
+                completedAt: new Date().toISOString()
+              }
+            });
+          }}
           style={{
             background: "none",
             border: `1px solid ${T.border}`,

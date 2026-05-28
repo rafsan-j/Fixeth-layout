@@ -19,6 +19,15 @@ export interface AssessmentQuestion {
   ans: number;
 }
 
+export interface UserEvaluation {
+  skipped: boolean;
+  score?: number;
+  percentage?: number;
+  strengths?: string[];
+  weaknesses?: string[];
+  completedAt?: string;
+}
+
 export interface Lesson {
   id: number;
   title: string;

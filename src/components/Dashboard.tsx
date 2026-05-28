@@ -1,7 +1,9 @@
 import React from "react";
 import { themes } from "../data";
+import { AlertCircle, CheckCircle2, ArrowRight } from "lucide-react";
+import ContentTemplates from "./ContentTemplates";
 
-export default function DashboardScreen({ T, t, lang, onContinue, user }: { T: any; t: any; lang: string; onContinue: () => void; user?: { name: string } }) {
+export default function DashboardScreen({ T, t, lang, onContinue, user, evaluation, onStartAssessment }: { T: any; t: any; lang: string; onContinue: () => void; user?: { name: string }; evaluation?: any; onStartAssessment?: () => void }) {
   const skills = [
     ["Python & Numpy", "+47%"],
     ["Pandas ETL", "+32%"],
@@ -96,6 +98,85 @@ export default function DashboardScreen({ T, t, lang, onContinue, user }: { T: a
             </span>
           </div>
         </div>
+
+        {/* Skipped Evaluation Banner */}
+        {evaluation?.skipped && (
+          <div
+            style={{
+              background: `linear-gradient(135deg, #FF8A3D0d 0%, #FF8A3D1a 100%)`,
+              border: `2px solid #FF8A3D`,
+              borderRadius: 14,
+              padding: "20px 24px",
+              marginBottom: 20,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 16,
+              boxShadow: `0 4px 14px #FF8A3D15`,
+              animation: "slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)"
+            }}
+          >
+            <style>{`
+              @keyframes slideDown {
+                from {
+                  opacity: 0;
+                  transform: translateY(-10px);
+                }
+                to {
+                  opacity: 1;
+                  transform: translateY(0);
+                }
+              }
+            `}</style>
+            
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <AlertCircle size={24} color="#FF8A3D" />
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 900, color: T.txt0, margin: "0 0 4px" }}>
+                  {lang === "bn" ? "আপনার মূল্যায়ন এখনো বাকি" : "Assessment Pending"}
+                </h3>
+                <p style={{ color: T.txt1, fontSize: 13, margin: 0, lineHeight: 1.3 }}>
+                  {lang === "bn"
+                    ? "আপনার দক্ষতা পরিমাপ করুন এবং ব্যক্তিগতকৃত শিক্ষা পথ পান।"
+                    : "Complete your assessment to unlock personalized learning recommendations."}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={onStartAssessment}
+              style={{
+                background: "#FF8A3D",
+                border: "none",
+                borderRadius: 8,
+                padding: "10px 16px",
+                fontWeight: 800,
+                fontSize: 13,
+                color: "#fff",
+                cursor: "pointer",
+                boxShadow: `0 4px 12px #FF8A3D3d`,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                whiteSpace: "nowrap",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow = `0 6px 16px #FF8A3D4d`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = `0 4px 12px #FF8A3D3d`;
+              }}
+            >
+              {lang === "bn" ? "এখনই মূল্যায়ন করুন" : "Take Assessment"}
+              <ArrowRight size={16} />
+            </button>
+          </div>
+        )}
+
 
         {/* Dynamic Metric Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 20 }}>
@@ -255,6 +336,16 @@ export default function DashboardScreen({ T, t, lang, onContinue, user }: { T: a
               ))}
             </div>
           </div>
+
+          {/* Content Templates for evaluation-based learning paths */}
+          {evaluation && !evaluation.skipped && evaluation.percentage !== undefined && (
+            <ContentTemplates
+              T={T}
+              t={t}
+              lang={lang}
+              evaluationPercentage={evaluation.percentage}
+            />
+          )}
 
         </div>
 
