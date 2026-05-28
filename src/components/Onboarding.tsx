@@ -8,16 +8,18 @@ export default function Onboarding({
   parentT,
   onComplete,
   isDark,
-  initialStep = 0
+  initialStep = 0,
+  initialTrack = "ds"
 }: {
   T: any;
   parentT: any;
   onComplete: (data: { lang: string; track: string; goal: string; level: string; assessmentScore?: number; evaluation?: UserEvaluation }) => void;
   isDark: boolean;
   initialStep?: number;
+  initialTrack?: string;
 }) {
   const [step, setStep] = useState(initialStep);
-  const [data, setData] = useState({ goal: "", level: "", track: "ds", lang: "en" });
+  const [data, setData] = useState({ goal: "", level: "", track: initialTrack, lang: "en" });
   const [quizAns, setQuizAns] = useState<{ [key: number]: number }>({});
 
   const t = i18n[data.lang] || parentT;
@@ -86,7 +88,7 @@ export default function Onboarding({
 
   // Retrieve assessment questions based on selected track or fall back to generic
   const getAssessmentQuestions = (): AssessmentQuestion[] => {
-    return assessments[data.track] || fallbackAssessment;
+    return assessments[data.track] || assessments["ds"] || fallbackAssessment;
   };
 
   const activeQuestions = getAssessmentQuestions();

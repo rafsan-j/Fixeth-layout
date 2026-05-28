@@ -180,8 +180,24 @@ const CORE_MODULES: Module[] = [
 export default function App() {
   const [isDark, setIsDark] = useState(true);
   const [lang, setLang] = useState("en");
-  const [screen, setScreen] = useState<"auth" | "onboarding" | "app">("auth");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [screen, setScreen] = useState<"auth" | "onboarding" | "app">(() => {
+    try {
+      const rawAuth = localStorage.getItem("fixeth.isAuthenticated");
+      const rawScreen = localStorage.getItem("fixeth.screen");
+      if (rawAuth === "true" && (rawScreen === "onboarding" || rawScreen === "app")) return rawScreen as "auth" | "onboarding" | "app";
+      if (rawAuth === "true") return "onboarding";
+    } catch {
+      // ignore
+    }
+    return "auth";
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("fixeth.isAuthenticated") === "true";
+    } catch {
+      return false;
+    }
+  });
   const [activeNav, setActiveNav] = useState("dashboard");
 
   // Lessons active indexes
@@ -205,8 +221,20 @@ export default function App() {
   const [profileTab, setProfileTab] = useState<"profile" | "account" | "preferences">("profile");
   const [profileReturnNav, setProfileReturnNav] = useState("dashboard");
   const [showingEvalResults, setShowingEvalResults] = useState(false);
-  const [lastEvaluationTrack, setLastEvaluationTrack] = useState<string>("");
-  const [resumingAssessment, setResumingAssessment] = useState(false);
+  const [lastEvaluationTrack, setLastEvaluationTrack] = useState<string>(() => {
+    try {
+      return localStorage.getItem("fixeth.lastEvaluationTrack") || "";
+    } catch {
+      return "";
+    }
+  });
+  const [resumingAssessment, setResumingAssessment] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("fixeth.resumingAssessment") === "true";
+    } catch {
+      return false;
+    }
+  });
 
   const activeModule = modules.find((mod: any) => mod.lessons.some((lesson: any) => lesson.id === activeLessonId)) ?? modules[0];
   const activeLesson = activeModule?.lessons.find((lesson: any) => lesson.id === activeLessonId) ?? activeModule?.lessons[0];
@@ -238,13 +266,28 @@ export default function App() {
       const rawAuth = localStorage.getItem("fixeth.isAuthenticated");
       const rawScreen = localStorage.getItem("fixeth.screen");
       const rawEval = localStorage.getItem("fixeth.evaluation");
+      const rawResuming = localStorage.getItem("fixeth.resumingAssessment");
+      const rawTab = localStorage.getItem("fixeth.activeTab");
       
       if (rawUser) setUser({ ...DEFAULT_USER, ...JSON.parse(rawUser) });
       if (rawPrefs) setPreferences(normalizePreferences(JSON.parse(rawPrefs)));
       if (rawLang === "en" || rawLang === "bn") setLang(rawLang);
       if (rawTheme === "true" || rawTheme === "false") setIsDark(rawTheme === "true");
       if (rawAuth === "true") setIsAuthenticated(true);
-      if (rawEval) setEvaluation(JSON.parse(rawEval));
+      if (rawEval) {
+        try {
+          const parsedEval = JSON.parse(rawEval);
+          setEvaluation(parsedEval);
+          if (parsedEval.track) setLastEvaluationTrack(parsedEval.track);
+        } catch {
+          // ignore malformed eval
+          setEvaluation(null);
+        }
+      }
+      if (rawResuming === "true") {
+        setResumingAssessment(true);
+      }
+      if (rawTab) setActiveNav(rawTab);
       
       // Restore screen state if authenticated
       if (rawAuth === "true" && (rawScreen === "onboarding" || rawScreen === "app")) {
@@ -286,6 +329,20 @@ export default function App() {
       localStorage.setItem("fixeth.evaluation", JSON.stringify(evaluation));
     }
   }, [evaluation]);
+
+  useEffect(() => {
+    if (lastEvaluationTrack) {
+      localStorage.setItem("fixeth.lastEvaluationTrack", lastEvaluationTrack);
+    }
+  }, [lastEvaluationTrack]);
+
+  useEffect(() => {
+    localStorage.setItem("fixeth.resumingAssessment", String(resumingAssessment));
+  }, [resumingAssessment]);
+
+  useEffect(() => {
+    localStorage.setItem("fixeth.activeTab", activeNav);
+  }, [activeNav]);
 
   // Sync active lesson highlight in list elements
   useEffect(() => {
@@ -536,6 +593,7 @@ export default function App() {
         parentT={t}
         isDark={isDark}
         initialStep={resumingAssessment ? 4 : 0}
+        initialTrack={lastEvaluationTrack || "ds"}
         onComplete={(data) => {
           if (data.lang) setLang(data.lang);
           
