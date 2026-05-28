@@ -208,10 +208,10 @@ export default function App() {
   const [lastEvaluationTrack, setLastEvaluationTrack] = useState<string>("");
   const [resumingAssessment, setResumingAssessment] = useState(false);
 
-  const activeModule = modules.find((mod) => mod.lessons.some((lesson) => lesson.id === activeLessonId)) ?? modules[0];
-  const activeLesson = activeModule?.lessons.find((lesson) => lesson.id === activeLessonId) ?? activeModule?.lessons[0];
+  const activeModule = modules.find((mod: any) => mod.lessons.some((lesson: any) => lesson.id === activeLessonId)) ?? modules[0];
+  const activeLesson = activeModule?.lessons.find((lesson: any) => lesson.id === activeLessonId) ?? activeModule?.lessons[0];
 
-  const accent = preferences.accentColor || ACCENT_PRESETS[preferences.colorPreset];
+  const accent = preferences.accentColor || ACCENT_PRESETS[preferences.colorPreset as keyof typeof ACCENT_PRESETS];
   const baseTheme = themes[isDark ? "dark" : "light"];
   const T = {
     ...baseTheme,
@@ -221,12 +221,12 @@ export default function App() {
   };
   const t = i18n[lang] || i18n.en;
 
-  const densityConfig = {
+  const densityConfig: any = {
     compact: { topBarHeight: 40, bottomBarHeight: 46, navPadding: "3px 6px" },
     comfortable: { topBarHeight: 44, bottomBarHeight: 52, navPadding: "4px 6px" },
     spacious: { topBarHeight: 52, bottomBarHeight: 58, navPadding: "6px 8px" }
   };
-  const density = densityConfig[preferences.layoutDensity];
+  const density = densityConfig[preferences.layoutDensity as keyof typeof densityConfig];
 
   // Load persisted user customization and auth state
   useEffect(() => {
@@ -289,10 +289,10 @@ export default function App() {
 
   // Sync active lesson highlight in list elements
   useEffect(() => {
-    setModules((pMods) =>
-      pMods.map((mod) => ({
+    setModules((pMods: any) =>
+      pMods.map((mod: any) => ({
         ...mod,
-        lessons: mod.lessons.map((les) => ({
+        lessons: mod.lessons.map((les: any) => ({
           ...les,
           active: les.id === activeLessonId
         }))
@@ -328,8 +328,8 @@ export default function App() {
   // Global sequential previous lesson navigation
   const handlePreviousLesson = () => {
     let allLessons: { id: number; modId: number }[] = [];
-    modules.forEach((m) => {
-      m.lessons.forEach((l) => {
+    modules.forEach((m: any) => {
+      m.lessons.forEach((l: any) => {
         allLessons.push({ id: l.id, modId: m.id });
       });
     });
@@ -338,15 +338,15 @@ export default function App() {
     if (currIdx > 0) {
       const prevItem = allLessons[currIdx - 1];
       setActiveLessonId(prevItem.id);
-      setOpenMods((prev) => ({ ...prev, [prevItem.modId]: true }));
+      setOpenMods((prev: any) => ({ ...prev, [prevItem.modId]: true }));
     }
   };
 
   // Global sequential next lesson navigation
   const handleNextLesson = () => {
     let allLessons: { id: number; modId: number }[] = [];
-    modules.forEach((m) => {
-      m.lessons.forEach((l) => {
+    modules.forEach((m: any) => {
+      m.lessons.forEach((l: any) => {
         allLessons.push({ id: l.id, modId: m.id });
       });
     });
@@ -355,7 +355,7 @@ export default function App() {
     if (currIdx < allLessons.length - 1) {
       const nextItem = allLessons[currIdx + 1];
       setActiveLessonId(nextItem.id);
-      setOpenMods((prev) => ({ ...prev, [nextItem.modId]: true }));
+      setOpenMods((prev: any) => ({ ...prev, [nextItem.modId]: true }));
     }
   };
 
@@ -499,7 +499,7 @@ export default function App() {
               setPreferences(DEFAULT_PREFERENCES);
             }}
             onSetLang={setLang}
-            onToggleTheme={() => setIsDark((prev) => !prev)}
+            onToggleTheme={() => setIsDark((prev: boolean) => !prev)}
           />
         );
       case "analytics":
@@ -581,7 +581,7 @@ export default function App() {
         onContinue={() => {
           setShowingEvalResults(false);
           // Set recommended lesson
-          const recommendedLessonId = evaluation.score >= 7 ? 5 : evaluation.score >= 5 ? 3 : 1;
+          const recommendedLessonId = (evaluation?.score ?? 0) >= 7 ? 5 : (evaluation?.score ?? 0) >= 5 ? 3 : 1;
           setActiveLessonId(recommendedLessonId);
           setOpenMods({ 1: true, 2: recommendedLessonId >= 5 });
         }}

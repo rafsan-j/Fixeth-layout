@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { themes, i18n, tracks, assessments, fallbackAssessment } from "../data";
 import { Track, AssessmentQuestion, UserEvaluation } from "../types";
+import { Volume2, Globe } from "lucide-react";
 
 export default function Onboarding({
   T,
@@ -97,7 +98,9 @@ export default function Onboarding({
   const steps = [
     // Step 0: Language Select
     <div style={{ textAlign: "center", maxWidth: 480, margin: "0 auto" }}>
-      <div style={{ fontSize: 44, marginBottom: 18 }}>🌐</div>
+      <div style={{ fontSize: 44, marginBottom: 18, display: "flex", justifyContent: "center" }}>
+        <Globe size={40} color={T.txt0} />
+      </div>
       <h2 style={{ fontSize: 24, fontWeight: 900, color: T.txt0, marginBottom: 10 }}>
         Choose Language / ভাষা নির্বাচন করুন
       </h2>
@@ -106,9 +109,9 @@ export default function Onboarding({
       </p>
       <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
         {[
-          ["en", "English", "🇬🇧"],
-          ["bn", "বাংলা", "🇧🇩"]
-        ].map(([id, label, flag]) => (
+          ["en", "English", "EN"],
+          ["bn", "বাংলা", "বাংলা"]
+        ].map(([id, label, code]) => (
           <button
             key={id}
             onClick={() => {
@@ -129,7 +132,22 @@ export default function Onboarding({
               transition: "border 0.15s"
             }}
           >
-            <span style={{ fontSize: 32 }}>{flag}</span>
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 8,
+                background: `${T.accent}20`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 18,
+                fontWeight: 900,
+                color: T.accent
+              }}
+            >
+              {code}
+            </div>
             <span style={{ fontSize: 16, fontWeight: 800, color: T.txt0 }}>{label}</span>
           </button>
         ))}

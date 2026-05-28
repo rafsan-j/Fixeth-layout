@@ -1,6 +1,6 @@
 import React from "react";
 import { themes } from "../data";
-import { AlertCircle, CheckCircle2, ArrowRight } from "lucide-react";
+import { AlertCircle, CheckCircle2, ArrowRight, BookOpen, Star, Bot, Award, Trophy, Flame } from "lucide-react";
 import ContentTemplates from "./ContentTemplates";
 
 export default function DashboardScreen({ T, t, lang, onContinue, user, evaluation, onStartAssessment }: { T: any; t: any; lang: string; onContinue: () => void; user?: { name: string }; evaluation?: any; onStartAssessment?: () => void }) {
@@ -14,10 +14,10 @@ export default function DashboardScreen({ T, t, lang, onContinue, user, evaluati
   ];
 
   const histories = [
-    { icon: "📝", textEn: "Completed Class: Scoping & Variables", textBn: "লেকচার সম্পন্ন: স্কোপ ও ভ্যারিয়েবল", timeEn: "2 hours ago", timeBn: "২ ঘণ্টা আগে", color: T.accent },
-    { icon: "⭐", textEn: "Assessment Passed: Digital Literacy (90%)", textBn: "কুইজ পাস: ডিজিটাল লিটারেসি (৯০%)", timeEn: "Yesterday", timeBn: "অনুমোদিত গতকাল", color: T.amber },
-    { icon: "🤖", textEn: "AI Mentor consultation on scope limits", textBn: "এআই মেন্টর সেশন — ৩টি প্রশ্ন সমাধান", timeEn: "3 days ago", timeBn: "৩ দিন আগে", color: T.blue },
-    { icon: "🎓", textEn: "Enrolled in Data Science Syllabus", textBn: "ডেটা সায়েন্স কারিকুলামে অংশগ্রহণ সম্পন্ন", timeEn: "2 weeks ago", timeBn: "২ সপ্তাহ আগে", color: T.purple }
+    { icon: BookOpen, textEn: "Completed Class: Scoping & Variables", textBn: "লেকচার সম্পন্ন: স্কোপ ও ভ্যারিয়েবল", timeEn: "2 hours ago", timeBn: "২ ঘণ্টা আগে", color: T.accent },
+    { icon: Star, textEn: "Assessment Passed: Digital Literacy (90%)", textBn: "কুইজ পাস: ডিজিটাল লিটারেসি (৯০%)", timeEn: "Yesterday", timeBn: "অনুমোদিত গতকাল", color: T.amber },
+    { icon: Bot, textEn: "AI Mentor consultation on scope limits", textBn: "এআই মেন্টর সেশন — ৩টি প্রশ্ন সমাধান", timeEn: "3 days ago", timeBn: "৩ দিন আগে", color: T.blue },
+    { icon: Award, textEn: "Enrolled in Data Science Syllabus", textBn: "ডেটা সায়েন্স কারিকুলামে অংশগ্রহণ সম্পন্ন", timeEn: "2 weeks ago", timeBn: "২ সপ্তাহ আগে", color: T.purple }
   ];
 
   const weekArr = ["M", "T", "W", "T", "F", "S", "S"];
@@ -181,10 +181,10 @@ export default function DashboardScreen({ T, t, lang, onContinue, user, evaluati
         {/* Dynamic Metric Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 20 }}>
           {[
-            { icon: "📖", label: t.lessonsCompleted, value: "3" },
-            { icon: "⭐", label: t.quizAvg, value: "88%" },
-            { icon: "🔥", label: t.streak, value: "12 days" },
-            { icon: "🏆", label: t.certificates, value: "3" }
+            { icon: BookOpen, label: t.lessonsCompleted, value: "3", color: T.accent },
+            { icon: Star, label: t.quizAvg, value: "88%", color: T.amber },
+            { icon: Flame, label: t.streak, value: "12 days", color: "#FF5B8A" },
+            { icon: Trophy, label: t.certificates, value: "3", color: T.blue }
           ].map((card, idx) => (
             <div
               key={idx}
@@ -203,7 +203,19 @@ export default function DashboardScreen({ T, t, lang, onContinue, user, evaluati
                 <div style={{ fontSize: 10, color: T.txt1, fontWeight: 700, textTransform: "uppercase" }}>{card.label}</div>
                 <div style={{ fontSize: 18, fontWeight: 900, color: T.txt0, marginTop: 4 }}>{card.value}</div>
               </div>
-              <span style={{ fontSize: 24 }}>{card.icon}</span>
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 8,
+                  background: `${card.color}20`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <card.icon size={18} color={card.color} strokeWidth={2} />
+              </div>
             </div>
           ))}
         </div>
@@ -306,34 +318,36 @@ export default function DashboardScreen({ T, t, lang, onContinue, user, evaluati
             </h3>
             
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {histories.map((hist, idx) => (
-                <div key={idx} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  <div
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: 6,
-                      background: hist.color + "18",
-                      color: hist.color,
-                      fontSize: 12,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0
-                    }}
-                  >
-                    {hist.icon}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 11.5, color: T.txt0, fontWeight: 600 }}>
-                      {lang === "bn" ? hist.textBn : hist.textEn}
+              {histories.map((hist, idx) => {
+                const Icon = hist.icon;
+                return (
+                  <div key={idx} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <div
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 6,
+                        background: hist.color + "18",
+                        color: hist.color,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0
+                      }}
+                    >
+                      <Icon size={14} strokeWidth={2.5} />
                     </div>
-                    <div style={{ fontSize: 9.5, color: T.txt2, marginTop: 1 }}>
-                      {lang === "bn" ? hist.timeBn : hist.timeEn}
+                    <div>
+                      <div style={{ fontSize: 11.5, color: T.txt0, fontWeight: 600 }}>
+                        {lang === "bn" ? hist.textBn : hist.textEn}
+                      </div>
+                      <div style={{ fontSize: 9.5, color: T.txt2, marginTop: 1 }}>
+                        {lang === "bn" ? hist.timeBn : hist.timeEn}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
