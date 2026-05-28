@@ -198,7 +198,13 @@ export default function App() {
       return false;
     }
   });
-  const [activeNav, setActiveNav] = useState("dashboard");
+  const [activeNav, setActiveNav] = useState<string>(() => {
+    try {
+      return localStorage.getItem("fixeth.activeTab") || "dashboard";
+    } catch {
+      return "dashboard";
+    }
+  });
 
   // Lessons active indexes
   const [modules, setModules] = useState<Module[]>(CORE_MODULES);
