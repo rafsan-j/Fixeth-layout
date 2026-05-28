@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import type { ComponentType } from "react";
 import { themes, i18n } from "./data";
-import { Module, ChatMessage, UserEvaluation } from "./types";
+import { Module, ChatMessage, UserEvaluation, UserProfile, UserPreferences } from "./types";
 import {
   Award,
   Bot,
@@ -34,40 +34,16 @@ import CertificatesScreen from "./components/Certificates";
 import ProfileSettingsScreen from "./components/ProfileSettings";
 import { CourseExplorerSidebar, AIChatSidebar } from "./components/Sidebar";
 
-type UserProfile = {
-  name: string;
-  email: string;
-  title?: string;
-  location?: string;
-  bio?: string;
-};
-
-type UserPreferences = {
-  layoutDensity: "compact" | "comfortable" | "spacious";
-  colorPreset: "mint" | "ocean" | "sunset" | "rose";
-  accentColor: string;
-  mentorTone: "concise" | "balanced" | "deep";
-  weeklyGoal: number;
-  contentVisibility: {
-    showCommunity: boolean;
-    showCertificates: boolean;
-    showMentor: boolean;
-    showPortfolio: boolean;
-  };
-  dataPreferences: {
-    allowTelemetry: boolean;
-    allowPersonalization: boolean;
-    autoSaveProgress: boolean;
-    downloadFormat: "json" | "csv";
-  };
-};
-
 const DEFAULT_USER: UserProfile = {
   name: "Jawat",
   email: "jawat@example.com",
   title: "Learner",
   location: "Dhaka, Bangladesh",
-  bio: "Focused on practical, job-ready engineering skills."
+  bio: "Focused on practical, job-ready engineering skills.",
+  division: "Dhaka",
+  jobFocus: "job",
+  certificateName: "Jawat Chaudhury",
+  publicPortfolio: true
 };
 
 const DEFAULT_PREFERENCES: UserPreferences = {
@@ -87,6 +63,22 @@ const DEFAULT_PREFERENCES: UserPreferences = {
     allowPersonalization: true,
     autoSaveProgress: true,
     downloadFormat: "json"
+  },
+  dataSaver: false,
+  editor: {
+    theme: "one-dark",
+    fontSize: 12,
+    lineWrapping: true,
+    indentSize: 4,
+    keymap: "standard"
+  },
+  ai: {
+    apiKey: "",
+    model: "gemini-flash",
+    ollamaUrl: "http://localhost:11434",
+    ollamaModel: "gemma:2b",
+    persona: "bengali",
+    defaultCognitiveLevel: "Student"
   }
 };
 
@@ -105,6 +97,12 @@ const normalizePreferences = (raw: unknown): UserPreferences => {
   const srcDataPrefs = (src.dataPreferences && typeof src.dataPreferences === "object")
     ? src.dataPreferences
     : DEFAULT_PREFERENCES.dataPreferences;
+  const srcEditor = (src.editor && typeof src.editor === "object")
+    ? src.editor
+    : DEFAULT_PREFERENCES.editor;
+  const srcAi = (src.ai && typeof src.ai === "object")
+    ? src.ai
+    : DEFAULT_PREFERENCES.ai;
 
   const layoutDensity = ["compact", "comfortable", "spacious"].includes(String(src.layoutDensity))
     ? (src.layoutDensity as UserPreferences["layoutDensity"])
@@ -137,9 +135,36 @@ const normalizePreferences = (raw: unknown): UserPreferences => {
       allowPersonalization: srcDataPrefs.allowPersonalization ?? DEFAULT_PREFERENCES.dataPreferences.allowPersonalization,
       autoSaveProgress: srcDataPrefs.autoSaveProgress ?? DEFAULT_PREFERENCES.dataPreferences.autoSaveProgress,
       downloadFormat: srcDataPrefs.downloadFormat === "csv" ? "csv" : "json"
+    },
+    dataSaver: src.dataSaver ?? DEFAULT_PREFERENCES.dataSaver,
+    editor: {
+      theme: ["monokai", "one-dark", "solarized", "vibrant", "github-light"].includes(String(srcEditor.theme))
+        ? (srcEditor.theme as UserPreferences["editor"]["theme"])
+        : DEFAULT_PREFERENCES.editor.theme,
+      fontSize: Number.isFinite(srcEditor.fontSize) ? Math.min(18, Math.max(11, Number(srcEditor.fontSize))) : DEFAULT_PREFERENCES.editor.fontSize,
+      lineWrapping: srcEditor.lineWrapping ?? DEFAULT_PREFERENCES.editor.lineWrapping,
+      indentSize: [2, 4].includes(Number(srcEditor.indentSize)) ? (Number(srcEditor.indentSize) as 2 | 4) : DEFAULT_PREFERENCES.editor.indentSize,
+      keymap: ["standard", "vim", "emacs"].includes(String(srcEditor.keymap))
+        ? (srcEditor.keymap as UserPreferences["editor"]["keymap"])
+        : DEFAULT_PREFERENCES.editor.keymap
+    },
+    ai: {
+      apiKey: typeof srcAi.apiKey === "string" ? srcAi.apiKey : DEFAULT_PREFERENCES.ai.apiKey,
+      model: ["gemini-flash", "gemini-pro", "gemini-1.5", "ollama"].includes(String(srcAi.model))
+        ? (srcAi.model as UserPreferences["ai"]["model"])
+        : DEFAULT_PREFERENCES.ai.model,
+      ollamaUrl: typeof srcAi.ollamaUrl === "string" ? srcAi.ollamaUrl : DEFAULT_PREFERENCES.ai.ollamaUrl,
+      ollamaModel: typeof srcAi.ollamaModel === "string" ? srcAi.ollamaModel : DEFAULT_PREFERENCES.ai.ollamaModel,
+      persona: ["socratic", "academic", "bengali", "rpg"].includes(String(srcAi.persona))
+        ? (srcAi.persona as UserPreferences["ai"]["persona"])
+        : DEFAULT_PREFERENCES.ai.persona,
+      defaultCognitiveLevel: ["ELI5", "Student", "Pro", "Research"].includes(String(srcAi.defaultCognitiveLevel))
+        ? (srcAi.defaultCognitiveLevel as UserPreferences["ai"]["defaultCognitiveLevel"])
+        : DEFAULT_PREFERENCES.ai.defaultCognitiveLevel
     }
   };
 };
+
 
 const toRgba = (hex: string, alpha: number) => {
   const normalized = hex.replace("#", "");
@@ -518,11 +543,11 @@ export default function App() {
           />
         );
       case "codespace":
-        return <CodeSpaceScreen T={T} t={t} />;
+        return <CodeSpaceScreen T={T} t={t} preferences={preferences} />;
       case "tools":
         return <ToolsScreen T={T} t={t} />;
       case "mentor":
-        return <AIMentorScreen T={T} t={t} lang={lang} aiMsgs={aiMsgs} setAiMsgs={setAiMsgs} />;
+        return <AIMentorScreen T={T} t={t} lang={lang} aiMsgs={aiMsgs} setAiMsgs={setAiMsgs} preferences={preferences} />;
       case "community":
         return <CommunityScreen T={T} t={t} lang={lang} />;
       case "certs":
@@ -972,6 +997,7 @@ export default function App() {
             setMsgs={setAiMsgs}
             lang={lang}
             width={rightSidebarWidth}
+            preferences={preferences}
           />
         )}
       </div>

@@ -1,12 +1,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import { themes } from "../data";
+import { UserPreferences } from "../types";
+
+const THEME_CONFIGS = {
+  monokai: { bg: "#272822", txt: "#f8f8f2", border: "#3e3d32", lineBg: "#1e1f1c", lineNum: "#75715e" },
+  "one-dark": { bg: "#282c34", txt: "#abb2bf", border: "#181a1f", lineBg: "#21252b", lineNum: "#4b5263" },
+  solarized: { bg: "#002b36", txt: "#839496", border: "#073642", lineBg: "#00212b", lineNum: "#586e75" },
+  vibrant: { bg: "#0f0f16", txt: "#eeeeee", border: "#222233", lineBg: "#08080c", lineNum: "#555577" },
+  "github-light": { bg: "#f6f8fa", txt: "#24292f", border: "#d0d7de", lineBg: "#eaeef2", lineNum: "#57606a" }
+};
 
 interface FileEntry {
   name: string;
   content: string;
 }
 
-export default function CodeSpaceScreen({ T, t }: { T: any; t: any }) {
+export default function CodeSpaceScreen({ T, t, preferences }: { T: any; t: any; preferences: UserPreferences }) {
   const [gitConnected, setGitConnected] = useState(false);
   const [activeTab, setActiveTab] = useState("main.py");
   
@@ -205,6 +214,19 @@ export default function CodeSpaceScreen({ T, t }: { T: any; t: any }) {
           >
             {gitConnected ? "● " + t.gitConnected : "Offline Repo"}
           </span>
+          <span
+            style={{
+              background: `${T.accent}12`,
+              color: T.accent,
+              border: `1px solid ${T.accent}33`,
+              borderRadius: 4,
+              padding: "1px 6px",
+              fontSize: 9,
+              fontWeight: 700
+            }}
+          >
+            Theme: {preferences?.editor?.theme || "one-dark"} | Size: {preferences?.editor?.fontSize || 12}px | Keymap: {preferences?.editor?.keymap || "standard"}
+          </span>
         </div>
 
         {/* Action button slots */}
@@ -302,51 +324,66 @@ export default function CodeSpaceScreen({ T, t }: { T: any; t: any }) {
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
           
           {/* Main Code Editor section */}
-          <div style={{ flex: 1, display: "flex", background: "#18181F", minHeight: 0, position: "relative" }}>
-            
-            {/* Editor line numbers column */}
-            <div
-              style={{
-                width: 32,
-                background: "#131317",
-                borderRight: "1px solid #222",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                fontSize: 11,
-                fontFamily: "monospace",
-                color: "#444",
-                lineHeight: 1.6,
-                padding: "10px 0",
-                userSelect: "none"
-              }}
-            >
-              {Array.from({ length: files[activeTab]?.split("\n").length || 1 }).map((_, idx) => (
-                <div key={idx} style={{ height: "19px" }}>
-                  {idx + 1}
+          {(() => {
+            const editorPrefs = preferences?.editor || {
+              theme: "one-dark" as const,
+              fontSize: 12,
+              lineWrapping: true,
+              indentSize: 4 as const,
+              keymap: "standard" as const
+            };
+            const themeConfig = THEME_CONFIGS[editorPrefs.theme] || THEME_CONFIGS["one-dark"];
+            return (
+              <div style={{ flex: 1, display: "flex", background: themeConfig.bg, minHeight: 0, position: "relative" }}>
+                
+                {/* Editor line numbers column */}
+                <div
+                  style={{
+                    width: 34,
+                    background: themeConfig.lineBg,
+                    borderRight: `1px solid ${themeConfig.border}`,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    fontSize: editorPrefs.fontSize - 1,
+                    fontFamily: "monospace",
+                    color: themeConfig.lineNum,
+                    lineHeight: 1.6,
+                    padding: "10px 0",
+                    userSelect: "none",
+                    flexShrink: 0
+                  }}
+                >
+                  {Array.from({ length: files[activeTab]?.split("\n").length || 1 }).map((_, idx) => (
+                    <div key={idx} style={{ height: "19px" }}>
+                      {idx + 1}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            {/* Interactive textarea editor */}
-            <textarea
-              value={files[activeTab]}
-              onChange={(e) => handleEditCode(e.target.value)}
-              style={{
-                flex: 1,
-                background: "transparent",
-                border: "none",
-                resize: "none",
-                outline: "none",
-                padding: "8px 12px",
-                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                fontSize: 12,
-                color: "#99DFB1",
-                lineHeight: 1.6,
-                tabSize: 4
-              }}
-            />
-          </div>
+                {/* Interactive textarea editor */}
+                <textarea
+                  value={files[activeTab]}
+                  onChange={(e) => handleEditCode(e.target.value)}
+                  style={{
+                    flex: 1,
+                    background: "transparent",
+                    border: "none",
+                    resize: "none",
+                    outline: "none",
+                    padding: "8px 12px",
+                    fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                    fontSize: editorPrefs.fontSize,
+                    color: themeConfig.txt,
+                    lineHeight: 1.6,
+                    tabSize: editorPrefs.indentSize,
+                    whiteSpace: editorPrefs.lineWrapping ? "pre-wrap" : "pre",
+                    overflowX: editorPrefs.lineWrapping ? "hidden" : "auto"
+                  }}
+                />
+              </div>
+            );
+          })()}
 
           {/* Bash Terminal section */}
           <div

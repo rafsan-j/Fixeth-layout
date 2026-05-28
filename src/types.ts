@@ -52,3 +52,52 @@ export interface ChatMessage {
 export interface CodeFiles {
   [filename: string]: string;
 }
+
+export interface UserProfile {
+  name: string;
+  email: string;
+  title?: string;
+  location?: string;
+  bio?: string;
+  division?: "Dhaka" | "Chittagong" | "Sylhet" | "Rajshahi" | "Khulna" | "Barisal" | "Rangpur" | "Mymensingh";
+  jobFocus?: "job" | "upskill" | "switch" | "explore";
+  certificateName?: string;
+  publicPortfolio?: boolean;
+}
+
+export interface UserPreferences {
+  layoutDensity: "compact" | "comfortable" | "spacious";
+  colorPreset: "mint" | "ocean" | "sunset" | "rose";
+  accentColor: string;
+  mentorTone: "concise" | "balanced" | "deep";
+  weeklyGoal: number;
+  contentVisibility: {
+    showCommunity: boolean;
+    showCertificates: boolean;
+    showMentor: boolean;
+    showPortfolio: boolean;
+  };
+  dataPreferences: {
+    allowTelemetry: boolean;
+    allowPersonalization: boolean;
+    autoSaveProgress: boolean;
+    downloadFormat: "json" | "csv";
+  };
+  dataSaver: boolean;
+  editor: {
+    theme: "monokai" | "one-dark" | "solarized" | "vibrant" | "github-light";
+    fontSize: number;
+    lineWrapping: boolean;
+    indentSize: 2 | 4;
+    keymap: "standard" | "vim" | "emacs";
+  };
+  ai: {
+    apiKey: string;
+    model: "gemini-flash" | "gemini-pro" | "gemini-1.5" | "ollama";
+    ollamaUrl: string;
+    ollamaModel: string;
+    persona: "socratic" | "academic" | "bengali" | "rpg";
+    defaultCognitiveLevel: "ELI5" | "Student" | "Pro" | "Research";
+  };
+}
+
